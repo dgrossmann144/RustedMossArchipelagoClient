@@ -1,0 +1,5 @@
+match self.type {
+  case "archipelagoItem" {
+    self.sprite_index = global.archipelago.archipelagoSprite
+  }
+}

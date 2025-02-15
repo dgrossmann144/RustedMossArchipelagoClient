@@ -1,0 +1,533 @@
+let menu = instance_find(omenu_new, 0)
+if (menu != noone) {
+  -- the main menu
+  if (menu.state == 14) {
+    if (global.archipelago.connectionState != "disconnected") {
+      global.archipelago.apclient_disconnect()
+    }
+    global.archipelago.menuState = 0
+    global.archipelago.menuTimeout = 0
+    global.archipelago.connectionState = "disconnected"
+    global.archipelago.save = {
+      url: "archipelago.gg",
+      port: "38281",
+      slotName: "slotName",
+      slotPassword: "",
+      receivedItems: [],
+      checkedLocations: {},
+      beatMaya: false
+    }
+    global.archipelago.processItems = false
+    global.archipelago.grappleUpgradeEnabled = false
+    global.archipelago.infiniteGrappleEnabled = false
+    global.archipelago.chargeJumpEnabled = false
+    global.archipelago.menuDeath = false
+    global.archipelago.shopState = 0
+    global.archipelago.tempTrinketData = []
+    global.archipelago.hardMaya = 0
+    global.archipelago.deathLink = 0
+    global.archipelago.ending = 0
+    global.archipelago.shopDiscountPercentage = 1
+    ds_queue_clear(global.archipelago.messageQueue)
+    global.archipelago.messageDuration = 0
+    global.archipelago.message = ""
+    global.archipelago.endingProcessed = false
+  -- menu state right before loading game
+  } else if (menu.state == 8) {
+    match global.archipelago.menuState {
+      case 0 {
+        -- wait on menu state 8 until we are connected
+        -- go back if there is a connection error
+        menu.start_timer = 0
+
+        if (file_exists("f_save_" + string(global.current_file) + ".archipelago.save")) {
+          let archipelagoSaveFile = file_text_open_read("f_save_" + string(global.current_file) + ".archipelago.save")
+          let archipelagoSaveString = file_text_readln(archipelagoSaveFile)
+          file_text_close(archipelagoSaveFile)
+          global.archipelago.save = json_parse(archipelagoSaveString)
+          global.archipelago.apclient_connect("", "Rusted Moss", global.archipelago.save.url + ":" + global.archipelago.save.port)
+          global.archipelago.menuState = 1
+          global.archipelago.menuTimeout = 0
+        } else {
+          -- todo tell user to enter connection info
+          -- creates file for the user with default values
+          global.archipelago.saveArchipelagoData()
+
+          menu.state = 14
+        }
+      }
+      case 1 {
+        menu.start_timer = 0
+
+        if (global.archipelago.connectionState == "socketConnected") {
+          global.archipelago.apclient_connect_slot(global.archipelago.save.slotName, global.archipelago.save.slotPassword, "[]")
+          global.archipelago.menuState = 2
+          global.archipelago.menuTimeout = 0
+        }
+
+        global.archipelago.menuTimeout += 1
+        if (global.archipelago.menuTimeout > 600) {
+          -- todo tell user to verify connection info is correct
+          menu.state = 14
+        }
+      }
+      case 2 {
+        menu.start_timer = 0
+
+        if (global.archipelago.connectionState == "slotConnected") {
+          -- resend all checkedLocations that were stored in the save file in case they were not sent properly
+          let checkedItems = "["
+          let locationNames = variable_struct_get_names(global.archipelago.save.checkedLocations)
+          let numLocations = array_length(locationNames)
+          let i = 0
+          while (i < numLocations) {
+            if (i == 0) {
+              checkedItems += global.archipelago.save.checkedLocations[locationNames[i]]
+            } else {
+              checkedItems += ", " + global.archipelago.save.checkedLocations[locationNames[i]]
+            }
+            i += 1
+          }
+          global.archipelago.apclient_location_checks(checkedItems + "]")
+
+          global.archipelago.menuState = 3
+        }
+
+        global.archipelago.menuTimeout += 1
+        if (global.archipelago.menuTimeout > 600 or global.archipelago.connectionState == "slotRefused") {
+          -- todo tell user to verify connection info is correct and go back to main menu
+          menu.state = 14
+        }
+      }
+    }
+  }
+}
+
+let game = instance_find(ogame, 0)
+if (game != noone) {
+  -- process items on file load
+  if (global.archipelago.menuState == 3) {
+    global.archipelago.processItems = true
+    global.archipelago.menuState = 4
+  }
+  -- pause gamestate for teleporting to start
+  if (global.gamestate == 2) {
+    if (keyboard_check_pressed(vk_f5)) {
+      global.archipelago.menuDeath = true
+      global.start_room_x = 36
+      global.start_room_y = 32
+      save_game()
+      global.gamestate = 9
+    }
+  -- death gamestate
+  } else if (global.gamestate == 9) {
+    if (game.dead_timer == 89) {
+      -- todo test death link sending
+      -- if (global.archipelago.deathLink and !global.archipelago.menuDeath) {
+      --   global.archipelago.apclient_death_link("")
+      -- }
+      global.archipelago.menuDeath = false
+      global.archipelago.processItems = true
+    }
+  -- ending a gamestate
+  } else if (global.gamestate == 32 and !global.archipelago.endingProcessed) {
+    if (global.archipelago.ending == 0 or global.archipelago.ending == 4) {
+      global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
+    }
+    global.archipelago.endingProcessed = true
+  -- ending b gamestate
+  } else if (global.gamestate == 33 and !global.archipelago.endingProcessed) {
+    if (global.archipelago.ending <= 1 or global.archipelago.ending == 4) {
+      global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
+    }
+    global.archipelago.endingProcessed = true
+  -- ending c gamestate
+  } else if (global.gamestate == 34 and !global.archipelago.endingProcessed) {
+    if (global.archipelago.ending <= 2 or global.archipelago.ending == 4) {
+      global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
+    }
+    global.archipelago.endingProcessed = true
+  -- ending d gamestate  
+  } else if (global.gamestate == 35 and !global.archipelago.endingProcessed) {
+    if (global.archipelago.ending == 0 or global.archipelago.ending >= 3) {
+      global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
+    }
+    global.archipelago.endingProcessed = true
+  -- ending e gamestate
+  } else if (global.gamestate == 36 and !global.archipelago.endingProcessed) {
+    if (global.archipelago.ending == 4) {
+      global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
+    }
+    global.archipelago.endingProcessed = true
+  }
+
+  let roomName = room_get_name(room_get())
+  let trinketPickup = instance_find(opickup_trinket, 0)
+  -- move lilly trinket off screen every frame because the game crashes if we delete it
+  if (trinketPickup != noone and roomName == "rm_forest_lilly") {
+    trinketPickup.x = -50
+    trinketPickup.y = -50
+  }
+
+  -- see if there is already a mod instance in the room to avoid creating one every frame
+  let numModInstance = instance_number(omod_instance)
+  let i = 0
+  let archipelagoInstanceExists = false
+  while (i < numModInstance) {
+    let modInstance = instance_find(omod_instance, 0)
+    if (modInstance.type == "archipelagoItem") {
+      archipelagoInstanceExists = true
+      break
+    }
+    i += 1
+  }
+
+  -- handle creating npc trinkets
+  if (!archipelagoInstanceExists) {
+    if (story_flag_triggered("face_delivered") and roomName == "rm_sea_8_alt" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_sea_8_alt")) {
+      instance_create_depth(180, 150, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_trinket_rm_sea_8_alt"
+      })
+    } else if (story_flag_triggered("lilly_triggered") and roomName == "rm_forest_lilly" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_forest_lilly")) {
+      instance_create_depth(184, 176, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_trinket_rm_forest_lilly"
+      })
+    } else if (story_flag_triggered("nell_meet_third") and roomName == "rm_lake_extra_6" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_lake_extra_6")) {
+      instance_create_depth(80, 160, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_trinket_rm_lake_extra_6"
+      })
+    } else if (story_flag_triggered("eli_meet_third") and roomName == "rm_lab_red_alt" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_lab_red_alt")) {
+      instance_create_depth(552, 360, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_trinket_rm_lab_red_alt"
+      })
+    }
+  }
+
+  -- reset maya_win story flag in rooms before maya 1 fight, or set it in the rooms before maya 2 fight if player has beat maya
+  if (roomName == "rm_moss_top_save" or roomName == "rm_moss_top_hidden_1") {
+    story_flag_set("maya_win", false)
+  } else if (roomName == "rm_forest_core_6" or roomName == "rm_forest_boss_after") {
+    if (global.archipelago.save.beatMaya) {
+      story_flag_set("maya_win", true)
+    }
+  }
+}
+
+-- doesn't delete star because that would allow the player to leave the room, is deleted on mod_instance pickup
+let starPickup = instance_find(opickup_star, 0)
+if (starPickup != noone) {
+  if (starPickup.visible) {
+    instance_create_depth(starPickup.x, starPickup.y, starPickup.depth, omod_instance, {
+      type: "archipelagoItem",
+      name: starPickup.name
+    })
+    starPickup.visible = false
+    starPickup.y = starPickup.y - 1000
+  }
+}
+
+if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Titania_Piece")) {
+  let headCutscene = instance_find(ocutscene_head, 0)
+  if (headCutscene != noone and !variable_struct_exists(global.archipelago.save.checkedLocations, "Titania_Piece")) {
+    global.archipelago.checkLocation("Titania_Piece")
+  }
+}
+
+if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Charge_Jump")) {
+  let seer = instance_find(oseer, 0)
+  if (seer != noone) {
+    if (seer.state == 4 and seer.seer_index == 3) {
+      global.archipelago.checkLocation("Charge_Jump")
+    }
+  }
+}
+
+if (!array_contains(global.archipelago.save.receivedItems, "Charge_Jump")) {
+  -- disables charge jump
+  global.jump_charge__ = 0
+}
+
+if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Grappling_Hook")) {
+  let mechBoss = instance_find(oboss_mech, 0)
+  if (mechBoss != noone) {
+    if (mechBoss.state == 11 and mechBoss.dead_state == 3) {
+      global.archipelago.checkLocation("Grappling_Hook")
+    }
+  }
+}
+
+if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Grappling_Hook_Upgrade")) {
+  let hookUpgradeStatue = instance_find(ohook_upgrade_statue, 0)
+  if (hookUpgradeStatue != noone) {
+    if (hookUpgradeStatue.state == 4) {
+      global.archipelago.checkLocation("Grappling_Hook_Upgrade")
+    }
+  }
+}
+
+let bossMaya = instance_find(oboss_maya, 0)
+if (bossMaya != noone) {
+  -- todo fix makes her immortal
+  -- it player has already beaten maya make it trivial
+  -- if (global.archipelago.save.beatMaya) {
+  --   bossMaya.hp = 1
+  -- }
+
+  -- reset maya win flag so player can refight to teleport back to snowy outpost
+  if (bossMaya.substate == 5 and bossMaya.attack_index == 1) {
+    global.archipelago.save.beatMaya = true
+  }
+}
+
+let shop = instance_find(par_shop, 0)
+if (shop != noone) {
+  if (shop.state == 2 and global.archipelago.shopState == 0) {
+    global.archipelago.shopState = 1
+    global.archipelago.tempTrinketData = global.trinket_data_
+    global.trinket_data_ = [
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_2")},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_3")},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_5")},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_9")},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_10")},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_15")},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_22")},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_24")},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_31")},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false},
+      {cost_value: 1, found: false}]
+  }
+
+  if (shop.state == 5 and global.archipelago.shopState == 1) {
+    global.archipelago.shopState = 0
+    if (global.trinket_data_[2].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_2")) {
+      global.archipelago.checkLocation("trinket_data_2")
+    }
+    if (global.trinket_data_[3].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_3")) {
+      global.archipelago.checkLocation("trinket_data_3")
+    }
+    if (global.trinket_data_[9].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_9")) {
+      global.archipelago.checkLocation("trinket_data_9")
+    }
+    if (global.trinket_data_[31].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_31")) {
+      global.archipelago.checkLocation("trinket_data_31")
+    }
+    if (global.trinket_data_[15].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_15")) {
+      global.archipelago.checkLocation("trinket_data_15")
+    }
+    if (global.trinket_data_[22].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_22")) {
+      global.archipelago.checkLocation("trinket_data_22")
+    }
+    if (global.trinket_data_[5].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_5")) {
+      global.archipelago.checkLocation("trinket_data_5")
+    }
+    if (global.trinket_data_[10].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_10")) {
+      global.archipelago.checkLocation("trinket_data_10")
+    }
+    if (global.trinket_data_[24].found and !variable_struct_exists(global.archipelago.save.checkedLocations, "trinket_data_24")) {
+      global.archipelago.checkLocation("trinket_data_24")
+    }
+
+    global.trinket_data_ = global.archipelago.tempTrinketData
+  }
+}
+
+let hook = instance_find(ohook, 0)
+if (hook != noone and !global.archipelago.grappleUpgradeEnabled) {
+  -- disables hook pull
+  hook.pulled = true
+}
+
+let player = instance_find(oplayer, 0)
+if (player != noone) {
+  if (!array_contains(global.archipelago.save.receivedItems, "Grappling_Hook")) {
+    -- disables grappling hook
+    player.can_hook_delay = 15
+  } else {
+    global.HOOK_UNLOCKED_ = true
+  }
+
+  if (!global.archipelago.infiniteGrappleEnabled) {
+    player.endless_hook = false
+  } else {
+    player.endless_hook = true
+  }
+
+  if (global.archipelago.processItems) {
+    let grappleCount = 0
+    let hpCount = 0
+    let mpCount = 0
+    let tpCount = 0
+    let faeSilverCount = 0
+    let flagCount = 0
+    let titaniaPieceCount = 0
+    let i = 0
+    while (i < array_length(global.archipelago.save.receivedItems)) {
+      match global.archipelago.save.receivedItems[i] {
+        case "Grappling_Hook" { grappleCount += 1 }
+        case "Charge_Jump" { global.charge_jump = true }
+        case "Grenade" { global.HOOK_UPGRADE_2_ = true }
+        case "Titania_Piece" { titaniaPieceCount += 1 }
+        case "HP_UP" { hpCount += 1 }
+        case "MP_UP" { mpCount += 1 }
+        case "TP_UP" { tpCount += 1 }
+        case "Fae_Silver" { faeSilverCount += 1 }
+        case "Flag" { flagCount += 1 }
+        case "Pistol" { global.weapon_data[5].found = 1 }
+        case "Shotgun" { global.weapon_data[1].found = 1 }
+        case "Rocket_Launcher" { global.weapon_data[4].found = 1 }
+        case "Sniper" { global.weapon_data[3].found = 1 }
+        case "Bolt_Dispenser" { global.weapon_data[2].found = 1 }
+        -- todo make sure trinket receive works while in and out of shop menu
+        case "Incendiary_Essence" { if (global.archipelago.shopState == 0) { global.trinket_data_[0].found = 1 } else { global.archipelago.tempTrinketData[0].found = 1} }
+        case "Tattered_Blindfold" { if (global.archipelago.shopState == 0) { global.trinket_data_[1].found = 1 } else { global.archipelago.tempTrinketData[1].found = 1} }
+        case "Giant_Chambers" { if (global.archipelago.shopState == 0) { global.trinket_data_[2].found = 1 } else { global.archipelago.tempTrinketData[2].found = 1} }
+        case "Magnet" { if (global.archipelago.shopState == 0) { global.trinket_data_[3].found = 1 } else { global.archipelago.tempTrinketData[3].found = 1} }
+        case "Ruby_Slippers" { if (global.archipelago.shopState == 0) { global.trinket_data_[4].found = 1 } else { global.archipelago.tempTrinketData[4].found = 1} }
+        case "Fairy_Ointment" { if (global.archipelago.shopState == 0) { global.trinket_data_[5].found = 1 } else { global.archipelago.tempTrinketData[5].found = 1} }
+        case "Energy_Refiner" { if (global.archipelago.shopState == 0) { global.trinket_data_[6].found = 1 } else { global.archipelago.tempTrinketData[6].found = 1} }
+        case "Lucky_Clover_Pearl" { if (global.archipelago.shopState == 0) { global.trinket_data_[7].found = 1 } else { global.archipelago.tempTrinketData[7].found = 1} }
+        case "Time_Manipulator" { if (global.archipelago.shopState == 0) { global.trinket_data_[8].found = 1 } else { global.archipelago.tempTrinketData[8].found = 1} }
+        case "Spiced_Gunpowder" { if (global.archipelago.shopState == 0) { global.trinket_data_[9].found = 1 } else { global.archipelago.tempTrinketData[9].found = 1} }
+        case "Powdered_Fae_Silver" { if (global.archipelago.shopState == 0) { global.trinket_data_[10].found = 1 } else { global.archipelago.tempTrinketData[10].found = 1} }
+        case "Sprites_Breath" { if (global.archipelago.shopState == 0) { global.trinket_data_[11].found = 1 } else { global.archipelago.tempTrinketData[11].found = 1} }
+        case "Wing_Clipper" { if (global.archipelago.shopState == 0) { global.trinket_data_[12].found = 1 } else { global.archipelago.tempTrinketData[12].found = 1} }
+        case "Powdered_Nightshade" { if (global.archipelago.shopState == 0) { global.trinket_data_[13].found = 1 } else { global.archipelago.tempTrinketData[13].found = 1} }
+        case "Cracked_Monocle" { if (global.archipelago.shopState == 0) { global.trinket_data_[14].found = 1 } else { global.archipelago.tempTrinketData[14].found = 1} }
+        case "Magnetic_Bullets" { if (global.archipelago.shopState == 0) { global.trinket_data_[15].found = 1 } else { global.archipelago.tempTrinketData[15].found = 1} }
+        case "Thorny_Rose" { if (global.archipelago.shopState == 0) { global.trinket_data_[16].found = 1 } else { global.archipelago.tempTrinketData[16].found = 1} }
+        case "Rusted_Coin" { if (global.archipelago.shopState == 0) { global.trinket_data_[17].found = 1 } else { global.archipelago.tempTrinketData[17].found = 1} }
+        case "Cleansing_Charm" { if (global.archipelago.shopState == 0) { global.trinket_data_[18].found = 1 } else { global.archipelago.tempTrinketData[18].found = 1} }
+        case "Erosive_Bullets" { if (global.archipelago.shopState == 0) { global.trinket_data_[19].found = 1 } else { global.archipelago.tempTrinketData[19].found = 1} }
+        case "Guardian_Fae" { if (global.archipelago.shopState == 0) { global.trinket_data_[20].found = 1 } else { global.archipelago.tempTrinketData[20].found = 1} }
+        case "Cricket_Bone_Whip" { if (global.archipelago.shopState == 0) { global.trinket_data_[21].found = 1 } else { global.archipelago.tempTrinketData[21].found = 1} }
+        case "Dandelion_Bomb" { if (global.archipelago.shopState == 0) { global.trinket_data_[22].found = 1 } else { global.archipelago.tempTrinketData[22].found = 1} }
+        case "Hp_Overload" { if (global.archipelago.shopState == 0) { global.trinket_data_[23].found = 1 } else { global.archipelago.tempTrinketData[23].found = 1} }
+        case "Heavy_Ammo" { if (global.archipelago.shopState == 0) { global.trinket_data_[24].found = 1 } else { global.archipelago.tempTrinketData[24].found = 1} }
+        case "Short_Fuse" { if (global.archipelago.shopState == 0) { global.trinket_data_[25].found = 1 } else { global.archipelago.tempTrinketData[25].found = 1} }
+        case "Thorny_Wings" { if (global.archipelago.shopState == 0) { global.trinket_data_[26].found = 1 } else { global.archipelago.tempTrinketData[26].found = 1} }
+        case "Mayas_Trinket" { if (global.archipelago.shopState == 0) { global.trinket_data_[27].found = 1 } else { global.archipelago.tempTrinketData[27].found = 1} }
+        case "Ferns_Trinket" { if (global.archipelago.shopState == 0) { global.trinket_data_[28].found = 1 } else { global.archipelago.tempTrinketData[28].found = 1} }
+        case "Fae_of_Love" { if (global.archipelago.shopState == 0) { global.trinket_data_[29].found = 1 } else { global.archipelago.tempTrinketData[29].found = 1} }
+        case "Fae_of_Hate" { if (global.archipelago.shopState == 0) { global.trinket_data_[30].found = 1 } else { global.archipelago.tempTrinketData[30].found = 1} }
+        case "Fae_of_Glass" { if (global.archipelago.shopState == 0) { global.trinket_data_[31].found = 1 } else { global.archipelago.tempTrinketData[31].found = 1} }
+        case "Titanias_Protection" { if (global.archipelago.shopState == 0) { global.trinket_data_[32].found = 1 } else { global.archipelago.tempTrinketData[32].found = 1} }
+        case "Energy_Disruptor" { if (global.archipelago.shopState == 0) { global.trinket_data_[33].found = 1 } else { global.archipelago.tempTrinketData[33].found = 1} }
+      }
+      global.stat_max_hp = 7 + hpCount
+      global.stat_max_mp = 21 + (2 * mpCount) + (3 * flagCount)
+      -- set flags_found to enable juni's climb
+      ds_map_set(global.save_data, "flags_found", flagCount)
+      global.max_trinkets_points_ = 10 + (2 * tpCount)
+      global.metal_found_ = faeSilverCount
+      if (titaniaPieceCount >= 8) {
+        story_flag_set("titania_head_activated", true)
+        titaniaPieceCount = 7
+      } else {
+        story_flag_set("titania_head_activated", false)
+      }
+      global.stars_ = titaniaPieceCount
+
+      if (grappleCount >= 2) {
+        global.archipelago.grappleUpgradeEnabled = true
+        global.HOOK_UPGRADE_0_ = true
+      }
+
+      if (grappleCount >= 3) {
+        global.archipelago.infiniteGrappleEnabled = true
+      }
+
+      i += 1
+    }
+
+    global.archipelago.processItems = false
+  }
+}
+
+-- enable infinite use of sniper and grenades
+if (global.mp < 5) {
+  global.mp = 5
+}
+
+
+global.archipelago.apclient_poll()
+
+let pollStatus = global.archipelago.apclient_json_source()
+let jsonString = global.archipelago.apclient_json_dump(0)
+
+match pollStatus {
+  case "ap_socket_error" {
+    global.rmml.log("socket error")
+    global.rmml.log(jsonString)
+  }
+  case "ap_socket_connected" {
+    global.rmml.log("socket connected")
+    global.rmml.log(jsonString)
+    global.archipelago.connectionState = "socketConnected"
+  }
+  case "ap_slot_refused" {
+    global.rmml.log("slot refused")
+    global.rmml.log(jsonString)
+    global.archipelago.connectionState = "slotRefused"
+  }
+  case "ap_slot_connected" {
+    global.rmml.log("slot connected")
+    global.rmml.log(jsonString)
+    global.archipelago.connectionState = "slotConnected"
+    global.archipelago.hardMaya = global.archipelago.apclient_json_number_at(0, "hard_maya")
+    global.archipelago.deathLink = global.archipelago.apclient_json_number_at(0, "deathlink")
+    global.archipelago.ending = global.archipelago.apclient_json_number_at(0, "ending")
+    global.archipelago.shopDiscountPercentage = global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100
+  }
+  case "ap_items_received" {
+    global.rmml.log("items received")
+    global.rmml.log(jsonString)
+    -- todo improve received message
+    let numItems = global.archipelago.apclient_json_number_at(0, "len")
+    let index = global.archipelago.apclient_json_number_at(0, "index")
+    let namesProxy = global.archipelago.apclient_json_proxy(0, "names")
+    let i = 0
+    while (i < numItems) {
+      let itemName = global.archipelago.apclient_json_string_at(namesProxy, string(i))
+      if (i + index == array_length(global.archipelago.save.receivedItems)) {
+        array_push(global.archipelago.save.receivedItems, itemName)
+        ds_queue_enqueue(global.archipelago.messageQueue, "Received item: " + itemName)
+        global.archipelago.processItems = true
+      }
+      i += 1
+    }
+    global.archipelago.saveArchipelagoData()
+  }
+}
+
+
+

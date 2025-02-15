@@ -1,0 +1,506 @@
+-- TODO before release
+-- [x] Read connection info from file and connect to slot
+-- [x] Poll for items and give them to player
+-- [x] hide already collected locations (hp, mp, tp, fae silver, flag, titania pieces, weapon, grenade, trinkets)
+-- [x] safely disable grapple, upgraded grapple, infinite grapple, grenade, charge jump
+-- [x] Save checked locations to a file for safety and send them on reconnect
+-- [x] write global.archipelago.save to file when things are updated
+-- [x] Detection events for goal completion
+-- [x] text display when receiving item
+-- [x] text display when sending item
+-- [x] remove bonnie boss blocks
+-- [x] allow maya boss refight for teleport back to snowy outpost
+-- [x] go back to teleporter button
+-- [x] sniper mana hacks
+-- [ ] delete archipelago.save file when save file is deleted
+
+
+-- todo later
+-- titania piece spawning on you maybe causing problems?
+-- fill player hp/mp when receiving a hp/mp/flag
+-- hard maya option
+-- death link send
+-- death link receive
+-- scouting shop items
+
+-- todo do i need these?
+global.AP_RENDER_FORMAT_TEXT = 0
+global.AP_RENDER_FORMAT_HTML = 1
+global.AP_RENDER_FORMAT_ANSI = 2
+global.AP_STATE_DISCONNECTED = 0
+global.AP_STATE_SOCKET_CONNECTING = 1
+global.AP_STATE_SOCKET_CONNECTED = 2
+global.AP_STATE_ROOM_INFO = 3
+global.AP_STATE_SLOT_CONNECTED = 4 
+global.AP_CLIENT_STATUS_UNKNOWN = 0
+global.AP_CLIENT_STATUS_READY = 10
+global.AP_CLIENT_STATUS_PLAYING = 20
+global.AP_CLIENT_STATUS_GOAL = 30
+global.AP_JSON_MISSING = -1
+global.AP_JSON_OBJECT = 0
+global.AP_JSON_ARRAY = 1
+global.AP_JSON_STRING = 2
+global.AP_JSON_NUMBER = 3
+global.AP_JSON_NULL = 4
+
+let archipelagoClientDLLPath = "mods/rmml/archipelago/gm-apclientpp.dll"
+global.archipelago = {}
+global.archipelago.ext_apclient_init = external_define(archipelagoClientDLLPath, "apclient_init", dll_cdecl, ty_real, 1, ty_real);
+global.archipelago.ext_apclient_deinit = external_define(archipelagoClientDLLPath, "apclient_deinit", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_connect = external_define(archipelagoClientDLLPath, "apclient_connect", dll_cdecl, ty_real, 3, ty_string, ty_string, ty_string);
+global.archipelago.ext_apclient_poll = external_define(archipelagoClientDLLPath, "apclient_poll", dll_cdecl, ty_string, 0);
+global.archipelago.ext_apclient_disconnect = external_define(archipelagoClientDLLPath, "apclient_disconnect", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_reset = external_define(archipelagoClientDLLPath, "apclient_reset", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_player_alias = external_define(archipelagoClientDLLPath, "apclient_get_player_alias", dll_cdecl, ty_string, 1, ty_real);
+global.archipelago.ext_apclient_get_player_game = external_define(archipelagoClientDLLPath, "apclient_get_player_game", dll_cdecl, ty_string, 1, ty_real);
+global.archipelago.ext_apclient_get_game = external_define(archipelagoClientDLLPath, "apclient_get_game", dll_cdecl, ty_string, 0);
+global.archipelago.ext_apclient_get_location_name = external_define(archipelagoClientDLLPath, "apclient_get_location_name", dll_cdecl, ty_string, 2, ty_real, ty_string);
+global.archipelago.ext_apclient_get_location_id = external_define(archipelagoClientDLLPath, "apclient_get_location_id", dll_cdecl, ty_real, 1, ty_string);
+global.archipelago.ext_apclient_get_item_name = external_define(archipelagoClientDLLPath, "apclient_get_item_name", dll_cdecl, ty_string, 2, ty_real, ty_string);
+global.archipelago.ext_apclient_get_item_id = external_define(archipelagoClientDLLPath, "apclient_get_item_id", dll_cdecl, ty_real, 1, ty_string);
+global.archipelago.ext_apclient_render_json = external_define(archipelagoClientDLLPath, "apclient_render_json", dll_cdecl, ty_string, 2, ty_string, ty_real);
+global.archipelago.ext_apclient_get_state = external_define(archipelagoClientDLLPath, "apclient_get_state", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_seed = external_define(archipelagoClientDLLPath, "apclient_get_seed", dll_cdecl, ty_string, 0);
+global.archipelago.ext_apclient_get_slot = external_define(archipelagoClientDLLPath, "apclient_get_slot", dll_cdecl, ty_string, 0);
+global.archipelago.ext_apclient_get_player_number = external_define(archipelagoClientDLLPath, "apclient_get_player_number", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_team_number = external_define(archipelagoClientDLLPath, "apclient_get_team_number", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_hint_points = external_define(archipelagoClientDLLPath, "apclient_get_hint_points", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_hint_cost_points = external_define(archipelagoClientDLLPath, "apclient_get_hint_cost_points", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_hint_cost_percent = external_define(archipelagoClientDLLPath, "apclient_get_hint_cost_percent", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_is_data_package_valid = external_define(archipelagoClientDLLPath, "apclient_is_data_package_valid", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_server_time = external_define(archipelagoClientDLLPath, "apclient_get_server_time", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_has_password = external_define(archipelagoClientDLLPath, "apclient_has_password", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_get_checked_locations = external_define(archipelagoClientDLLPath, "apclient_get_checked_locations", dll_cdecl, ty_string, 0);
+global.archipelago.ext_apclient_get_missing_locations = external_define(archipelagoClientDLLPath, "apclient_get_missing_locations", dll_cdecl, ty_string, 0);
+global.archipelago.ext_apclient_set_items_handling = external_define(archipelagoClientDLLPath, "apclient_set_items_handling", dll_cdecl, ty_real, 1, ty_real);
+global.archipelago.ext_apclient_set_version = external_define(archipelagoClientDLLPath, "apclient_set_version", dll_cdecl, ty_real, 3, ty_real, ty_real, ty_real);
+global.archipelago.ext_apclient_say = external_define(archipelagoClientDLLPath, "apclient_say", dll_cdecl, ty_real, 1, ty_string);
+global.archipelago.ext_apclient_connect_slot = external_define(archipelagoClientDLLPath, "apclient_connect_slot", dll_cdecl, ty_real, 3, ty_string, ty_string, ty_string);
+global.archipelago.ext_apclient_connect_update_items_handling = external_define(archipelagoClientDLLPath, "apclient_connect_update_items_handling", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_connect_update = external_define(archipelagoClientDLLPath, "apclient_connect_update", dll_cdecl, ty_real, 1, ty_string);
+global.archipelago.ext_apclient_sync = external_define(archipelagoClientDLLPath, "apclient_sync", dll_cdecl, ty_real, 0);
+global.archipelago.ext_apclient_status_update = external_define(archipelagoClientDLLPath, "apclient_status_update", dll_cdecl, ty_real, 1, ty_real);
+global.archipelago.ext_apclient_location_checks = external_define(archipelagoClientDLLPath, "apclient_location_checks", dll_cdecl, ty_real, 1, ty_string);
+global.archipelago.ext_apclient_location_scouts = external_define(archipelagoClientDLLPath, "apclient_location_scouts", dll_cdecl, ty_real, 2, ty_string, ty_real);
+global.archipelago.ext_apclient_bounce = external_define(archipelagoClientDLLPath, "apclient_bounce", dll_cdecl, ty_real, 1, ty_string);
+global.archipelago.ext_apclient_set_bounce_targets = external_define(archipelagoClientDLLPath, "apclient_set_bounce_targets", dll_cdecl, ty_real, 3, ty_string, ty_string, ty_string);
+global.archipelago.ext_apclient_death_link = external_define(archipelagoClientDLLPath, "apclient_death_link", dll_cdecl, ty_real, 1, ty_string);
+global.archipelago.ext_apclient_json_proxy = external_define(archipelagoClientDLLPath, "apclient_json_proxy", dll_cdecl, ty_real, 2, ty_real, ty_string);
+global.archipelago.ext_apclient_json_exists = external_define(archipelagoClientDLLPath, "apclient_json_exists", dll_cdecl, ty_real, 2, ty_real, ty_string);
+global.archipelago.ext_apclient_json_typeof = external_define(archipelagoClientDLLPath, "apclient_json_typeof", dll_cdecl, ty_real, 1, ty_real);
+global.archipelago.ext_apclient_json_size = external_define(archipelagoClientDLLPath, "apclient_json_size", dll_cdecl, ty_real, 1, ty_real);
+global.archipelago.ext_apclient_json_get_string = external_define(archipelagoClientDLLPath, "apclient_json_get_string", dll_cdecl, ty_string, 1, ty_real);
+global.archipelago.ext_apclient_json_string_at = external_define(archipelagoClientDLLPath, "apclient_json_string_at", dll_cdecl, ty_string, 2, ty_real, ty_string);
+global.archipelago.ext_apclient_json_get_number = external_define(archipelagoClientDLLPath, "apclient_json_get_number", dll_cdecl, ty_real, 1, ty_real);
+global.archipelago.ext_apclient_json_number_at = external_define(archipelagoClientDLLPath, "apclient_json_number_at", dll_cdecl, ty_real, 2, ty_real, ty_string);
+global.archipelago.ext_apclient_json_dump = external_define(archipelagoClientDLLPath, "apclient_json_dump", dll_cdecl, ty_string, 1, ty_real);
+global.archipelago.ext_apclient_json_source = external_define(archipelagoClientDLLPath, "apclient_json_source", dll_cdecl, ty_string, 0);
+global.archipelago.apclient_init = fun(version) {
+  return external_call(global.archipelago.ext_apclient_init, version)
+}
+global.archipelago.apclient_deinit = fun() {
+  return external_call(global.archipelago.ext_apclient_deinit)
+}
+global.archipelago.apclient_connect = fun(uuid, game, host) {
+  return external_call(global.archipelago.ext_apclient_connect, uuid, game, host)
+}
+global.archipelago.apclient_poll = fun() {
+  return external_call(global.archipelago.ext_apclient_poll)
+}
+global.archipelago.apclient_disconnect = fun() {
+  return external_call(global.archipelago.ext_apclient_disconnect)
+}
+global.archipelago.apclient_reset = fun() {
+  return external_call(global.archipelago.ext_apclient_reset)
+}
+global.archipelago.apclient_get_player_alias = fun(slot) {
+  return external_call(global.archipelago.ext_apclient_get_player_alias, slot)
+}
+global.archipelago.apclient_get_player_game = fun(slot) {
+  return external_call(global.archipelago.ext_apclient_get_player_game, slot)
+}
+global.archipelago.apclient_get_game = fun() {
+    return external_call(global.archipelago.ext_apclient_get_game)
+}
+global.archipelago.apclient_get_location_name = fun(id, game) {
+    return external_call(global.archipelago.ext_apclient_get_location_name, id, game)
+}
+global.archipelago.apclient_get_location_id = fun(name) {
+  return external_call(global.archipelago.ext_apclient_get_location_id, name)
+}
+global.archipelago.apclient_get_item_name = fun(id, game) {
+  return external_call(global.archipelago.ext_apclient_get_item_name, id, game)
+}
+global.archipelago.apclient_get_item_id = fun(name) {
+  return external_call(global.archipelago.ext_apclient_get_item_id, name)
+}
+global.archipelago.apclient_render_json = fun(json, format) {
+  return external_call(global.archipelago.ext_apclient_render_json, json, format)
+}
+global.archipelago.apclient_get_state = fun() {
+  return external_call(global.archipelago.ext_apclient_get_state)
+}
+global.archipelago.apclient_get_seed = fun() {
+  return external_call(global.archipelago.ext_apclient_get_seed)
+}
+global.archipelago.apclient_get_slot = fun() {
+  return external_call(global.archipelago.ext_apclient_get_slot)
+}
+global.archipelago.apclient_get_player_number = fun() {
+  return external_call(global.archipelago.ext_apclient_get_player_number)
+}
+global.archipelago.apclient_get_team_number = fun() {
+  return external_call(global.archipelago.ext_apclient_get_team_number)
+}
+global.archipelago.apclient_get_hint_points = fun() {
+  return external_call(global.archipelago.ext_apclient_get_hint_points)
+}
+global.archipelago.apclient_get_hint_cost_points = fun() {
+  return external_call(global.archipelago.ext_apclient_get_hint_cost_points)
+}
+global.archipelago.apclient_get_hint_cost_percent = fun() {
+  return external_call(global.archipelago.ext_apclient_get_hint_cost_percent)
+}
+global.archipelago.apclient_is_data_package_valid = fun() {
+  return external_call(global.archipelago.ext_apclient_is_data_package_valid)
+}
+global.archipelago.apclient_get_server_time = fun() {
+  return external_call(global.archipelago.ext_apclient_get_server_time)
+}
+global.archipelago.apclient_has_password = fun() {
+  return external_call(global.archipelago.ext_apclient_has_password)
+}
+global.archipelago.apclient_get_checked_locations = fun() {
+  return external_call(global.archipelago.ext_apclient_get_checked_locations)
+}
+global.archipelago.apclient_get_missing_locations = fun() {
+  return external_call(global.archipelago.ext_apclient_get_missing_locations)
+}
+global.archipelago.apclient_set_items_handling = fun(items_handling) {
+  return external_call(global.archipelago.ext_apclient_set_items_handling, items_handling)
+}
+global.archipelago.apclient_set_version = fun(ma, mi, r) {
+  return external_call(global.archipelago.ext_apclient_set_version, ma, mi, r)
+}
+global.archipelago.apclient_say = fun(message) {
+  return external_call(global.archipelago.ext_apclient_say, message)
+}
+global.archipelago.apclient_connect_slot = fun(name, password, tags) {
+  return external_call(global.archipelago.ext_apclient_connect_slot, name, password, tags)
+}
+global.archipelago.apclient_connect_update_items_handling = fun() {
+  return external_call(global.archipelago.ext_apclient_connect_update_items_handling)
+}
+global.archipelago.apclient_connect_update = fun(tags) {
+  return external_call(global.archipelago.ext_apclient_connect_update, tags)
+}
+global.archipelago.apclient_sync = fun() {
+  return external_call(global.archipelago.ext_apclient_sync)
+}
+global.archipelago.apclient_status_update = fun(status) {
+  return external_call(global.archipelago.ext_apclient_status_update, status)
+}
+global.archipelago.apclient_location_checks = fun(locations) {
+  return external_call(global.archipelago.ext_apclient_location_checks, locations)
+}
+global.archipelago.apclient_location_scouts = fun(locations, create_as_hints) {
+  return external_call(global.archipelago.ext_apclient_location_scouts, locations, create_as_hints)
+}
+global.archipelago.apclient_bounce = fun(data) {
+  return external_call(global.archipelago.ext_apclient_bounce, data)
+}
+global.archipelago.apclient_set_bounce_targets = fun(games, slots, tags) {
+  return external_call(global.archipelago.ext_apclient_set_bounce_targets, games, slots, tags)
+}
+global.archipelago.apclient_death_link = fun(cause) {
+  return external_call(global.archipelago.ext_apclient_death_link, cause)
+}
+global.archipelago.apclient_json_proxy = fun(proxy, key) {
+  return external_call(global.archipelago.ext_apclient_json_proxy, proxy, key)
+}
+global.archipelago.apclient_json_exists = fun(proxy, key) {
+  return external_call(global.archipelago.ext_apclient_json_exists, proxy, key)
+}
+global.archipelago.apclient_json_typeof = fun(proxy) {
+  return external_call(global.archipelago.ext_apclient_json_typeof, proxy)
+}
+global.archipelago.apclient_json_size = fun(proxy) {
+  return external_call(global.archipelago.ext_apclient_json_size, proxy)
+}
+global.archipelago.apclient_json_get_string = fun(proxy) {
+  return external_call(global.archipelago.ext_apclient_json_get_string, proxy)
+}
+global.archipelago.apclient_json_string_at = fun(proxy, key) {
+  return external_call(global.archipelago.ext_apclient_json_string_at, proxy, key)
+}
+global.archipelago.apclient_json_get_number = fun(proxy) {
+  return external_call(global.archipelago.ext_apclient_json_get_number, proxy)
+}
+global.archipelago.apclient_json_number_at = fun(proxy, key) {
+  return external_call(global.archipelago.ext_apclient_json_number_at, proxy, key)
+}
+global.archipelago.apclient_json_dump = fun(proxy) {
+  return external_call(global.archipelago.ext_apclient_json_dump, proxy)
+}
+global.archipelago.apclient_json_source = fun() {
+  return external_call(global.archipelago.ext_apclient_json_source)
+}
+
+global.archipelago.apclient_init(2)
+global.archipelago.apclient_disconnect()
+global.archipelago.apclient_set_items_handling(3)
+global.archipelago.apclient_set_version(5, 1, 0)
+
+global.archipelago.menuState = 0
+global.archipelago.menuTimeout = 0
+global.archipelago.connectionState = "disconnected"
+global.archipelago.save = {
+  url: "archipelago.gg",
+  port: "38281",
+  slotName: "slotName",
+  slotPassword: "",
+  receivedItems: [],
+  checkedLocations: {},
+  beatMaya: false
+}
+global.archipelago.processItems = false
+global.archipelago.grappleUpgradeEnabled = false
+global.archipelago.infiniteGrappleEnabled = false
+global.archipelago.chargeJumpEnabled = false
+global.archipelago.menuDeath = false
+global.archipelago.shopState = 0
+global.archipelago.tempTrinketData = []
+global.archipelago.hardMaya = 0
+global.archipelago.deathLink = 0
+global.archipelago.ending = 0
+global.archipelago.shopDiscountPercentage = 1
+global.archipelago.messageQueue = ds_queue_create()
+global.archipelago.messageDuration = 0
+global.archipelago.message = ""
+global.archipelago.endingProcessed = false
+
+global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 0, 0)
+
+global.archipelago.checkLocation = fun(location) {
+  let locationId = ""
+  match location {
+    case "pickup_hp_rm_test_hidden" { locationId = "144000005" }
+    case "pickup_hp_rm_test_hidden_3" { locationId = "144000006" }
+    case "pickup_hp_rm_test_before_boss_alt" { locationId = "144000007" }
+    case "pickup_hp_rm_mount_4_half_right" { locationId = "144000032" }
+    case "pickup_hp_rm_forest_cafe_3" { locationId = "144000071" }
+    case "pickup_hp_rm_sea_extra_2" { locationId = "144000042" }
+    case "pickup_hp_rm_underhang_b20" { locationId = "144000089" }
+    case "pickup_mp_rm_lake_hidden_3" { locationId = "144000083" }
+    case "pickup_mp_rm_forest_extra_3" { locationId = "144000072" }
+    case "pickup_mp_rm_sea_left_2" { locationId = "144000044" }
+    case "pickup_mp_rm_catacombs_extra_1" { locationId = "144000059" }
+    case "pickup_mp_rm_sea_2" { locationId = "144000043" }
+    case "pickup_mp_rm_moss_hidden_1" { locationId = "144000019" }
+    case "pickup_mp_rm_4_hidden" { locationId = "144000009" }
+    case "pickup_mp_rm_mount_intro_begin" { locationId = "144000033" }
+    case "pickup_mp_rm_test_alt_alt" { locationId = "144000008" }
+    case "pickup_tp_rm_moss_8" { locationId = "144000022" }
+    case "pickup_tp_rm_lake_hidden_4" { locationId = "144000084" }
+    case "pickup_tp_rm_forest_extra_0" { locationId = "144000073" }
+    case "pickup_tp_rm_hidden_4" { locationId = "144000010" }
+    case "pickup_tp_rm_catacombs_extra_3" { locationId = "144000060" }
+    case "pickup_tp_rm_moss_3" { locationId = "144000021" }
+    case "pickup_tp_rm_mount_10_alt" { locationId = "144000034" }
+    case "pickup_tp_rm_underhang_extra_2" { locationId = "144000090" }
+    case "pickup_tp_rm_moss_top_cave" { locationId = "144000020" }
+    case "pickup_weapon_rm_moss_top_cave" { locationId = "144000012" }
+    case "pickup_weapon_rm_catacombs_right_extra" { locationId = "144000055" }
+    case "pickup_weapon_rm_forest_extra_4" { locationId = "144000064" }
+    case "pickup_weapon_rm_lake_hidden_2" { locationId = "144000077" }
+    case "pickup_weapon_rm_mount_top_boss" { locationId = "144000026" }
+    case "pickup_flag_rm_forest_to_rain" { locationId = "144000076" }
+    case "pickup_flag_rm_mount_4_half_right" { locationId = "144000037" }
+    case "pickup_flag_rm_catacombs_to_moss_2" { locationId = "144000063" }
+    case "pickup_flag_rm_moss_top_hidden_4" { locationId = "144000023" }
+    case "pickup_flag_rm_sea_mid_right_1" { locationId = "144000047" }
+    case "pickup_flag_rm_mount_shortcut" { locationId = "144000011" }
+    case "pickup_star_rm_forest_boss" { locationId = "144000066" }
+    case "pickup_star_rm_mount_boss" { locationId = "144000027" }
+    case "pickup_star_rm_test_boss" { locationId = "144000001" }
+    case "pickup_star_rm_lake_boss" { locationId = "144000078" }
+    case "pickup_star_rm_sea_boss" { locationId = "144000038" }
+    case "pickup_star_rm_catacombs_boss" { locationId = "144000056" }
+    case "pickup_star_rm_lab_boss" { locationId = "144000048" }
+    case "Titania_Piece" { locationId = "144000067" }
+    case "Grenade" { locationId = "144000024" }
+    case "Charge_Jump" { locationId = "144000013" }
+    case "Grappling_Hook" { locationId = "144000000" }
+    case "Grappling_Hook_Upgrade" { locationId = "144000065" }
+    case "Infinite_Grapple" { locationId = "144000092" }
+    case "pickup_dmg_rm_mount_right_4" { locationId = "144000036" }
+    case "pickup_dmg_rm_underhang_extra_1" { locationId = "144000091" }
+    case "pickup_dmg_rm_lake_hidden_5" { locationId = "144000086" }
+    case "pickup_dmg_rm_sea_mid_left_1" { locationId = "144000046" }
+    case "pickup_dmg_rm_lake_hidden_1" { locationId = "144000085" }
+    case "pickup_dmg_rm_lab_bleft_0" { locationId = "144000052" }
+    case "pickup_dmg_rm_forest_branch_2_2" { locationId = "144000075" }
+    case "pickup_dmg_rm_forest_branch_2_6" { locationId = "144000074" }
+    case "pickup_dmg_rm_catacombs_extra_2" { locationId = "144000062" }
+    case "pickup_dmg_rfae_h1" { locationId = "144000097" }
+    case "pickup_dmg_rm_mount_3_alt_hidden" { locationId = "144000035" }
+    case "pickup_dmg_rm_lab_save_right_2" { locationId = "144000054" }
+    case "pickup_dmg_rm_catacombs_extra_4_alt" { locationId = "144000061" }
+    case "pickup_dmg_rm_sea_new_2_alt" { locationId = "144000045" }
+    case "pickup_dmg_rm_lab_to_boss_4" { locationId = "144000053" }
+    case "pickup_dmg_rfae_h2" { locationId = "144000099" }
+    case "pickup_dmg_rfae_h4" { locationId = "144000098" }
+    case "pickup_trinket_rm_mount_top_left_4_alt" { locationId = "144000028" }
+    case "pickup_trinket_rm_snow_7" { locationId = "144000025" }
+    case "pickup_trinket_rm_sea_8_alt" { locationId = "144000040" }
+    case "pickup_trinket_rm_lab_red_alt" { locationId = "144000051" }
+    case "pickup_trinket_rm_tea_party" { locationId = "144000003" }
+    case "pickup_trinket_rm_lab_bed_2" { locationId = "144000049" }
+    case "pickup_trinket_rm_forest_lilly" { locationId = "144000068" }
+    case "pickup_trinket_rm_catacombs_extra_5" { locationId = "144000058" }
+    case "pickup_trinket_rm_sea_mid_2_alt" { locationId = "144000039" }
+    case "pickup_trinket_rm_lake_extra_6" { locationId = "144000082" }
+    case "pickup_trinket_rm_sea_arena_reward" { locationId = "144000041" }
+    case "pickup_trinket_rm_forest_extra_2" { locationId = "144000070" }
+    case "pickup_trinket_rm_moss_hidden_0" { locationId = "144000018" }
+    case "pickup_trinket_rm_test_hidden_2" { locationId = "144000002" }
+    case "pickup_trinket_rm_underhang_boss_after" { locationId = "144000088" }
+    case "pickup_trinket_rm_lab_main_left_0" { locationId = "144000050" }
+    case "pickup_trinket_rm_mount_right_alt_2" { locationId = "144000031" }
+    case "pickup_trinket_rm_meadow_to_snow_0" { locationId = "144000030" }
+    case "pickup_trinket_rfae_h0" { locationId = "144000093" }
+    case "pickup_trinket_rm_catacombs_alt_secret" { locationId = "144000057" }
+    case "pickup_trinket_rm_forest_cafe_2" { locationId = "144000069" }
+    case "pickup_trinket_rm_hell_garden_alt" { locationId = "144000087" }
+    case "pickup_trinket_rm_moss_top_hidden_4" { locationId = "144000014" }
+    case "pickup_trinket_rm_mount_ameli_1" { locationId = "144000029" }
+    case "pickup_trinket_rm_test_5" { locationId = "144000004" }
+    case "trinket_data_2" { locationId = "144000015" }
+    case "trinket_data_3" { locationId = "144000016" }
+    case "trinket_data_9" { locationId = "144000017" }
+    case "trinket_data_31" { locationId = "144000079" }
+    case "trinket_data_15" { locationId = "144000080" }
+    case "trinket_data_22" { locationId = "144000081" }
+    case "trinket_data_5" { locationId = "144000094" }
+    case "trinket_data_10" { locationId = "144000095" }
+    case "trinket_data_24" { locationId = "144000096" }
+  }
+  if (locationId != "") {
+    let locationName = "Unknown"
+    match locationId {
+      case 144000005 { locationName = "Flatlands HP UP (Bottom)" }
+      case 144000006 { locationName = "Flatlands HP UP (Top Left)" }
+      case 144000007 { locationName = "Flatlands HP UP (Top Right)" }
+      case 144000032 { locationName = "Smoked Forest HP UP" }
+      case 144000071 { locationName = "Living Quarters HP UP" }
+      case 144000042 { locationName = "Mountainside HP UP" }
+      case 144000089 { locationName = "Barrows Ceiling HP UP" }
+      case 144000083 { locationName = "Lake MP UP" }
+      case 144000072 { locationName = "Living Quarters MP UP" }
+      case 144000044 { locationName = "Mountainside MP UP (Bottom)" }
+      case 144000059 { locationName = "Ichor Refinery MP UP" }
+      case 144000043 { locationName = "Mountainside MP UP (Top)" }
+      case 144000019 { locationName = "Factory Roof MP UP" }
+      case 144000009 { locationName = "Flatlands MP UP (Top Right)" }
+      case 144000033 { locationName = "Smoked Forest MP UP" }
+      case 144000008 { locationName = "Flatlands MP UP (Bottom Left)" }
+      case 144000022 { locationName = "Factory Roof TP UP (Top Right)" }
+      case 144000084 { locationName = "Lake TP UP" }
+      case 144000073 { locationName = "Living Quarters TP UP" }
+      case 144000010 { locationName = "Flatlands TP UP" }
+      case 144000060 { locationName = "Ichor Refinery TP UP" }
+      case 144000021 { locationName = "Factory Roof TP UP (Middle)" }
+      case 144000034 { locationName = "Smoked Forest TP UP" }
+      case 144000090 { locationName = "Barrows Ceiling TP UP" }
+      case 144000020 { locationName = "Factory Roof TP UP (Bottom Left)" }
+      case 144000012 { locationName = "Factory Roof Pistol" }
+      case 144000055 { locationName = "Ichor Refinery Shotgun" }
+      case 144000064 { locationName = "Living Quarters Bolt Dispenser" }
+      case 144000077 { locationName = "Lake Rocket Launcher" }
+      case 144000026 { locationName = "Smoked Forest Sniper" }
+      case 144000076 { locationName = "Living Quarters Flag" }
+      case 144000037 { locationName = "Smoked Forest Flag" }
+      case 144000063 { locationName = "Ichor Refinery Flag" }
+      case 144000023 { locationName = "Factory Roof Flag" }
+      case 144000047 { locationName = "Mountainside Flag" }
+      case 144000011 { locationName = "Flatlands Flag" }
+      case 144000066 { locationName = "Living Quarters Titania Piece" }
+      case 144000027 { locationName = "Smoked Forest Titania Piece" }
+      case 144000001 { locationName = "Flatlands Titania Piece" }
+      case 144000078 { locationName = "Lake Titania Piece" }
+      case 144000038 { locationName = "Mountainside Titania Piece" }
+      case 144000056 { locationName = "Ichor Refinery Titania Piece" }
+      case 144000048 { locationName = "Lab Titania Piece" }
+      case 144000067 { locationName = "Living Quarters Titania Piece (Head)" }
+      case 144000024 { locationName = "Snowy Outpost Grenade" }
+      case 144000013 { locationName = "Factory Roof Charge Jump" }
+      case 144000000 { locationName = "Flatlands Grappling Hook" }
+      case 144000065 { locationName = "Living Quarters Grappling Hook Upgrade" }
+      case 144000092 { locationName = "Elfame Infinite Grapple" }
+      case 144000036 { locationName = "Smoked Forest Fae Silver (Top Right)" }
+      case 144000091 { locationName = "Barrows Ceiling Fae Silver" }
+      case 144000086 { locationName = "Lake Fae Silver (Right)" }
+      case 144000046 { locationName = "Mountainside Fae Silver (Bottom)" }
+      case 144000085 { locationName = "Lake Fae Silver (Left)" }
+      case 144000052 { locationName = "Lab Fae Silver (Left)" }
+      case 144000075 { locationName = "Living Quarters Fae Silver (Bottom Left)" }
+      case 144000074 { locationName = "Living Quarters Fae Silver (Top Right)" }
+      case 144000062 { locationName = "Ichor Refinery Fae Silver (Bottom Right)" }
+      case 144000097 { locationName = "Elfame Fae Silver (Left)" }
+      case 144000035 { locationName = "Smoked Forest Fae Silver (Bottom Left)" }
+      case 144000054 { locationName = "Lab Fae Silver (Right)" }
+      case 144000061 { locationName = "Ichor Refinery Fae Silver (Top Left)" }
+      case 144000045 { locationName = "Mountainside Fae Silver (Top)" }
+      case 144000053 { locationName = "Lab Fae Silver (Middle)" }
+      case 144000099 { locationName = "Elfame Fae Silver (Right)" }
+      case 144000098 { locationName = "Elfame Fae Silver (Middle)" }
+      case 144000028 { locationName = "Smoked Forest Short Fuse" }
+      case 144000025 { locationName = "Snowy Outpost Energy Disruptor" }
+      case 144000040 { locationName = "Mountainside Ruby Slippers" }
+      case 144000051 { locationName = "Lab Fae of Love" }
+      case 144000003 { locationName = "Flatlands Thorny Wings" }
+      case 144000049 { locationName = "Lab Maya's Trinket" }
+      case 144000068 { locationName = "Living Quarters Lucky Clover Pearl" }
+      case 144000058 { locationName = "Ichor Refinery Tattered Blindfold" }
+      case 144000039 { locationName = "Mountainside Energy Refiner" }
+      case 144000082 { locationName = "Lake Fae of Hate" }
+      case 144000041 { locationName = "Mountainside Guardian Fae" }
+      case 144000070 { locationName = "Living Quarters Wing Clipper" }
+      case 144000018 { locationName = "Factory Roof Erosive Bullets" }
+      case 144000002 { locationName = "Flatlands HP Overload" }
+      case 144000088 { locationName = "Barrows Ceiling Incendiary Essence" }
+      case 144000050 { locationName = "Lab Rusted Coin" }
+      case 144000031 { locationName = "Smoked Forest Powdered Nightshade" }
+      case 144000030 { locationName = "Smoked Forest Titania's Protection" }
+      case 144000093 { locationName = "Elfame Fern's Trinket" }
+      case 144000057 { locationName = "Ichor Refinery Cleansing Charm" }
+      case 144000069 { locationName = "Living Quarters Cracked Monocle" }
+      case 144000087 { locationName = "Barrows Ceiling Cricket Bone Whip" }
+      case 144000014 { locationName = "Factory Roof Thorny Rose" }
+      case 144000029 { locationName = "Smoked Forest Sprite's Breath" }
+      case 144000004 { locationName = "Flatlands Time Manipulator" }
+      case 144000015 { locationName = "Factory Roof Giant Chambers" }
+      case 144000016 { locationName = "Factory Roof Magnet" }
+      case 144000017 { locationName = "Factory Roof Spiced Gunpowder" }
+      case 144000079 { locationName = "Lake Fae of Glass" }
+      case 144000080 { locationName = "Lake Magnetic Bullets" }
+      case 144000081 { locationName = "Lake Dandelion Bomb" }
+      case 144000094 { locationName = "Elfame Fairy Ointment" }
+      case 144000095 { locationName = "Elfame Powdered Fae Silver" }
+      case 144000096 { locationName = "Elfame Heavy Ammo" }
+    }
+    global.archipelago.save.checkedLocations[location] = locationId
+    ds_queue_enqueue(global.archipelago.messageQueue, "Sent location: " + locationName)
+    global.archipelago.saveArchipelagoData()
+    global.rmml.log("Checked location with locationId: " + locationId)
+    global.archipelago.apclient_location_checks("[" + locationId + "]")
+  }
+}
+
+global.archipelago.saveArchipelagoData = fun() {
+  let archipelagoSaveFile = file_text_open_write("f_save_" + string(global.current_file) + ".archipelago.save")
+  file_text_write_string(archipelagoSaveFile, json_stringify(global.archipelago.save))
+  file_text_close(archipelagoSaveFile)
+}
+
+return undefined
