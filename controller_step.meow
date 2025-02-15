@@ -11,7 +11,7 @@ if (menu != noone) {
     global.archipelago.save = {
       url: "archipelago.gg",
       port: "38281",
-      slotName: "slotName",
+      slotName: "Fern",
       slotPassword: "",
       receivedItems: [],
       checkedLocations: {},
