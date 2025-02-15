@@ -100,6 +100,14 @@ if (menu != noone) {
         }
       }
     }
+  -- the delete file state
+  } else if (menu.state == 21) {
+    -- technically this deletes the archipelago save file the frame before the actual save file but it should be fine
+    if (menu.substate == 2 and menu.delete_progress == 120) {
+      if (file_exists("f_save_" + string(global.current_file) + ".archipelago.save")) {
+        file_delete("f_save_" + string(global.current_file) + ".archipelago.save")
+      }
+    }
   }
 }
 
