@@ -113,7 +113,7 @@ match roomName {
   }
   case "rm_catacombs_extra_5" {
     if (!variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_catacombs_extra_5")) {
-      instance_create_depth(240, 144, 0, omod_instance, {
+      instance_create_depth(264, 120, 0, omod_instance, {
         type: "archipelagoItem",
         name: "pickup_trinket_rm_catacombs_extra_5"
       })
