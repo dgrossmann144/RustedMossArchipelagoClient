@@ -182,7 +182,7 @@ if (game != noone) {
   let i = 0
   let archipelagoInstanceExists = false
   while (i < numModInstance) {
-    let modInstance = instance_find(omod_instance, 0)
+    let modInstance = instance_find(omod_instance, i)
     if (modInstance.type == "archipelagoItem") {
       archipelagoInstanceExists = true
       break
@@ -451,30 +451,30 @@ if (player != noone) {
         case "Titanias_Protection" { if (global.archipelago.shopState == 0) { global.trinket_data_[32].found = 1 } else { global.archipelago.tempTrinketData[32].found = 1} }
         case "Energy_Disruptor" { if (global.archipelago.shopState == 0) { global.trinket_data_[33].found = 1 } else { global.archipelago.tempTrinketData[33].found = 1} }
       }
-      global.stat_max_hp = 7 + hpCount
-      global.stat_max_mp = 21 + (2 * mpCount) + (3 * flagCount)
-      -- set flags_found to enable juni's climb
-      ds_map_set(global.save_data, "flags_found", flagCount)
-      global.max_trinkets_points_ = 10 + (2 * tpCount)
-      global.metal_found_ = faeSilverCount
-      if (titaniaPieceCount >= 8) {
-        story_flag_set("titania_head_activated", true)
-        titaniaPieceCount = 7
-      } else {
-        story_flag_set("titania_head_activated", false)
-      }
-      global.stars_ = titaniaPieceCount
-
-      if (grappleCount >= 2) {
-        global.archipelago.grappleUpgradeEnabled = true
-        global.HOOK_UPGRADE_0_ = true
-      }
-
-      if (grappleCount >= 3) {
-        global.archipelago.infiniteGrappleEnabled = true
-      }
 
       i += 1
+    }
+    global.stat_max_hp = 7 + hpCount
+    global.stat_max_mp = 21 + (2 * mpCount) + (3 * flagCount)
+    -- set flags_found to enable juni's climb
+    ds_map_set(global.save_data, "flags_found", flagCount)
+    global.max_trinkets_points_ = 10 + (2 * tpCount)
+    global.metal_found_ = faeSilverCount
+    if (titaniaPieceCount >= 8) {
+      story_flag_set("titania_head_activated", true)
+      titaniaPieceCount = 7
+    } else {
+      story_flag_set("titania_head_activated", false)
+    }
+    global.stars_ = titaniaPieceCount
+
+    if (grappleCount >= 2) {
+      global.archipelago.grappleUpgradeEnabled = true
+      global.HOOK_UPGRADE_0_ = true
+    }
+
+    if (grappleCount >= 3) {
+      global.archipelago.infiniteGrappleEnabled = true
     }
 
     global.archipelago.processItems = false
