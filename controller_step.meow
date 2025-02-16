@@ -190,7 +190,7 @@ if (game != noone) {
     i += 1
   }
 
-  -- handle creating npc trinkets
+  -- handle creating npc trinket and boss titania piece locations
   if (!archipelagoInstanceExists) {
     if (story_flag_triggered("face_delivered") and roomName == "rm_sea_8_alt" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_sea_8_alt")) {
       instance_create_depth(180, 150, 0, omod_instance, {
@@ -211,6 +211,41 @@ if (game != noone) {
       instance_create_depth(552, 360, 0, omod_instance, {
         type: "archipelagoItem",
         name: "pickup_trinket_rm_lab_red_alt"
+      })
+    } else if (ds_map_exists(global.save_data, "boss_book") and roomName == "rm_test_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_test_boss")) {
+      instance_create_depth(400, 184, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_star_rm_test_boss"
+      })
+    } else if (ds_map_exists(global.save_data, "boss_sword") and roomName == "rm_mount_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_mount_boss")) {
+      instance_create_depth(488, 204, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_star_rm_mount_boss"
+      })
+    } else if (ds_map_exists(global.save_data, "boss_angel") and roomName == "rm_sea_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_sea_boss")) {
+      instance_create_depth(448, 455, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_star_rm_sea_boss"
+      })
+    } else if (ds_map_exists(global.save_data, "boss_tar_beaten") and roomName == "rm_catacombs_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_catacombs_boss")) {
+      instance_create_depth(960, 400, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_star_rm_catacombs_boss"
+      })
+    } else if (ds_map_exists(global.save_data, "boss_worm") and roomName == "rm_lake_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_lake_boss")) {
+      instance_create_depth(575, 219, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_star_rm_lake_boss"
+      })
+    } else if (story_flag_triggered("maya_forest_win") and roomName == "rm_forest_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_forest_boss")) {
+      instance_create_depth(312, 280, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_star_rm_forest_boss"
+      })
+    } else if (story_flag_triggered("spirella_defeated") and roomName == "rm_lab_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_lab_boss")) {
+      instance_create_depth(442, 204, 0, omod_instance, {
+        type: "archipelagoItem",
+        name: "pickup_star_rm_lab_boss"
       })
     }
   }
@@ -235,17 +270,9 @@ if (game != noone) {
   }
 }
 
--- doesn't delete star because that would allow the player to leave the room, is deleted on mod_instance pickup
 let starPickup = instance_find(opickup_star, 0)
 if (starPickup != noone) {
-  if (starPickup.visible) {
-    instance_create_depth(starPickup.x, starPickup.y, starPickup.depth, omod_instance, {
-      type: "archipelagoItem",
-      name: starPickup.name
-    })
-    starPickup.visible = false
-    starPickup.y = starPickup.y - 1000
-  }
+  instance_destroy(starPickup)
 }
 
 if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Titania_Piece")) {

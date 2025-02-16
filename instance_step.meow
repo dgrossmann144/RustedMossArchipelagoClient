@@ -2,11 +2,6 @@ match self.type {
   case "archipelagoItem" {
     if place_meeting(self.x, self.y, oplayer) {
       global.archipelago.checkLocation(self.name)
-      -- deletes star pickup in room to open blocks keeping player in boss arena
-      let starPickup = instance_find(opickup_star, 0)
-      if (starPickup != noone) {
-        instance_destroy(starPickup)
-      }
       instance_destroy(self)
     }
   }
