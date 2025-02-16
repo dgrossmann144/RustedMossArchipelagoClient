@@ -223,6 +223,11 @@ if (game != noone) {
       story_flag_set("maya_win", true)
     }
   }
+
+  -- reset titania head in room before the head room
+  if (roomName == "rm_forest_core_0") {
+    story_flag_set("titania_head_activated", false)
+  }
 }
 
 -- doesn't delete star because that would allow the player to leave the room, is deleted on mod_instance pickup
