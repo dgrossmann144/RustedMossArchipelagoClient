@@ -32,6 +32,9 @@ if (menu != noone) {
     global.archipelago.messageDuration = 0
     global.archipelago.message = ""
     global.archipelago.endingProcessed = false
+    global.archipelago.processDeathlink = false
+    global.archipelago.lastDeathLink = 0
+    global.archipelago.deathLinkSource = ""
   -- menu state right before loading game
   } else if (menu.state == 8) {
     match global.archipelago.menuState {
@@ -130,10 +133,13 @@ if (game != noone) {
   -- death gamestate
   } else if (global.gamestate == 9) {
     if (game.dead_timer == 89) {
-      -- todo test death link sending
-      -- if (global.archipelago.deathLink and !global.archipelago.menuDeath) {
-      --   global.archipelago.apclient_death_link("")
-      -- }
+      if (global.archipelago.deathLink and !global.archipelago.menuDeath) {
+        global.rmml.log("Sent deathlink")
+        let epoch = floor(date_create_datetime(1970, 1, 1, 0, 0, 0))
+        let unixTime = floor(date_second_span(epoch, date_current_datetime()))
+        global.archipelago.lastDeathLink = unixTime
+        global.archipelago.apclient_death_link("")
+      }
       global.archipelago.menuDeath = false
       global.archipelago.processItems = true
     }
@@ -427,6 +433,16 @@ if (player != noone) {
     player.endless_hook = true
   }
 
+  -- seems like the "default" player states when we would want to do deathlink I think
+  if (player.state == 6 or player.state == 0) {
+    if (global.archipelago.processDeathlink) {
+      -- death gamestate
+      global.gamestate = 9
+      global.archipelago.processDeathlink = false
+      ds_queue_enqueue(global.archipelago.messageQueue, "Deathlink from: " + global.archipelago.deathLinkSource)
+    }
+  }
+
   if (global.archipelago.processItems) {
     let grappleCount = 0
     let hpCount = 0
@@ -550,6 +566,10 @@ match pollStatus {
     global.archipelago.connectionState = "slotConnected"
     global.archipelago.hardMaya = global.archipelago.apclient_json_number_at(0, "hard_maya")
     global.archipelago.deathLink = global.archipelago.apclient_json_number_at(0, "deathlink")
+    if (global.archipelago.deathLink == 1) {
+      global.rmml.log("Enabling deathlink")
+      global.archipelago.apclient_connect_update("[\"DeathLink\"]")
+    }
     global.archipelago.ending = global.archipelago.apclient_json_number_at(0, "ending")
     global.archipelago.shopDiscountPercentage = global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100
   }
@@ -572,7 +592,20 @@ match pollStatus {
     }
     global.archipelago.saveArchipelagoData()
   }
+  case "ap_bounced" {
+    global.rmml.log("received bounce")
+    global.rmml.log(jsonString)
+    -- todo uuuh, idk if this is really how to check for deathlink but it works lol
+    let dataProxy = global.archipelago.apclient_json_proxy(0, "data")
+    if (dataProxy != -1) {
+      let time = global.archipelago.apclient_json_number_at(dataProxy, "time")
+      if (global.archipelago.lastDeathLink + 10 < time) {
+        let epoch = floor(date_create_datetime(1970, 1, 1, 0, 0, 0))
+        let unixTime = floor(date_second_span(epoch, date_current_datetime()))
+        global.archipelago.lastDeathLink = unixTime
+        global.archipelago.deathLinkSource = global.archipelago.apclient_json_string_at(dataProxy, "source")
+        global.archipelago.processDeathlink = true
+      }
+    }
+  }
 }
-
-
-

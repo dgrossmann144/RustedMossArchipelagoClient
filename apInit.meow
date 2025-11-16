@@ -249,7 +249,7 @@ global.archipelago.apclient_json_source = fun() {
 global.archipelago.apclient_init(2)
 global.archipelago.apclient_disconnect()
 global.archipelago.apclient_set_items_handling(3)
-global.archipelago.apclient_set_version(5, 1, 0)
+global.archipelago.apclient_set_version(6, 4, 0)
 
 global.archipelago.menuState = 0
 global.archipelago.menuTimeout = 0
@@ -278,6 +278,9 @@ global.archipelago.messageQueue = ds_queue_create()
 global.archipelago.messageDuration = 0
 global.archipelago.message = ""
 global.archipelago.endingProcessed = false
+global.archipelago.processDeathlink = false
+global.archipelago.lastDeathLink = 0
+global.archipelago.deathLinkSource = ""
 
 global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 0, 0)
 
