@@ -519,7 +519,16 @@ if (player != noone) {
     } else {
       story_flag_set("titania_head_activated", false)
     }
-    global.stars_ = titaniaPieceCount
+    let roomName = room_get_name(room_get())
+    if (roomName == "rm_forest_boss") {
+      if (global.archipelago.hardMaya) {
+        global.stars_ = 0
+      } else {
+        global.stars_ = 1
+      }
+    } else {
+      global.stars_ = titaniaPieceCount
+    }
 
     if (grappleCount >= 2) {
       global.archipelago.grappleUpgradeEnabled = true
