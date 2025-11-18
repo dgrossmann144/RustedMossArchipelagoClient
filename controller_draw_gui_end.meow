@@ -10,6 +10,16 @@ if (global.gamestate == 2 and game != noone) {
   }
   draw_sprite_ext(smenu_bar, 6, (xx - 3), (yy + i * dis - 9), 2, 2, 0, 0x4A5158, 0.8)
   scribble("F5 go to teleporter", 6).transform(2, 2, 0).blend(4870488, 1).align(0, 0).draw((xx - 3 + 20), (yy + i * dis - 24))
+  i += 1
+  let endingLetter = "?"
+  match global.archipelago.ending {
+    case 0 {endingLetter = "A"}
+    case 1 {endingLetter = "B"}
+    case 2 {endingLetter = "C"}
+    case 3 {endingLetter = "D"}
+    case 4 {endingLetter = "E"}
+  }
+  scribble("Goal is ending " + endingLetter, 6).transform(2, 2, 0).blend(4870488, 1).align(0, 0).draw((xx - 3 + 20), (yy + i * dis - 24))
 }
 
 if (!ds_queue_empty(global.archipelago.messageQueue) and global.archipelago.messageDuration == 0) {  
@@ -23,4 +33,86 @@ if (global.archipelago.message != "") {
     global.archipelago.message = ""
     global.archipelago.messageDuration = 0
   }
+}
+
+let menu = instance_find(omenu_new, 0)
+if (menu != noone and menu.state == 8) {
+  let col = draw_get_color()
+  draw_set_color(c_black)
+  match global.archipelago.menuState {
+    case 1 {
+      let mx = global.mouse_gui_x_
+      let my = global.mouse_gui_y_
+      let windowX1 = 80
+      let windowY1 = 15
+      let windowX2 = display_get_gui_width() - 80
+      let nameX1 = windowX1 + 10
+      let nameY1 = windowY1 + 30
+      let nameX2 = windowX2 - 12
+      let nameY2 = nameY1 + 15
+      let nameHovered = point_in_rectangle(mx, my, nameX1, nameY1, nameX2, nameY2)
+      let nameHasControl = global.archipelago.slotNameInput.editing or nameHovered
+      global.archipelago.save.slotName = global.archipelago.slotNameInput.draw_and_get_singleline(global.archipelago.save.slotName, mx, my, nameHasControl, nameX1, nameY1, nameX2, 1, 2)
+      let passwordX1 = windowX1 + 10
+      let passwordY1 = windowY1 + 60
+      let passwordX2 = windowX2 - 12
+      let passwordY2 = passwordY1 + 15
+      let passwordHovered = point_in_rectangle(mx, my, passwordX1, passwordY1, passwordX2, passwordY2)
+      let passwordHasControl = global.archipelago.slotPasswordInput.editing or passwordHovered
+      global.archipelago.save.slotPassword = global.archipelago.slotPasswordInput.draw_and_get_singleline(global.archipelago.save.slotPassword, mx, my, passwordHasControl, passwordX1, passwordY1, passwordX2, 1, 2)
+      let urlX1 = windowX1 + 10
+      let urlY1 = windowY1 + 90
+      let urlX2 = windowX2 - 12
+      let urlY2 = urlY1 + 15
+      let urlHovered = point_in_rectangle(mx, my, urlX1, urlY1, urlX2, urlY2)
+      let urlHasControl = global.archipelago.urlInput.editing or urlHovered
+      global.archipelago.save.url = global.archipelago.urlInput.draw_and_get_singleline(global.archipelago.save.url, mx, my, urlHasControl, urlX1, urlY1, urlX2, 1, 2)
+
+      
+      global.component.label(nameX1 - 70, nameY1, 70, 20, "Slot Name:", false, "")
+      global.component.label(passwordX1 - 70, passwordY1, 70, 20, "Password:", false, "")
+      global.component.label(urlX1 - 70, urlY1, 70, 20, "Url+Port:", false, "")
+      
+      if global.component.button(
+        90, 150, 60, 20, "Cancel"
+      ) {
+        menu.state = 21
+        menu.substate = 0
+        global.archipelago.menuState = 0
+      }
+
+      if global.component.button(
+        165, 150, 60, 20, "Connect"
+      ) {
+        global.archipelago.saveArchipelagoData()
+        global.archipelago.apclient_connect("", "Rusted Moss", global.archipelago.save.url)
+        global.archipelago.menuState = 2
+      }
+    }
+    case 2 {
+      global.component.label(80, 15, 90, 20, "Connecting...", false, "")
+      if global.component.button(
+        90, 150, 60, 20, "Cancel"
+      ) {
+        global.archipelago.menuState = 1
+      }
+    }
+    case 3 {
+      global.component.label(80, 15, 90, 20, "Connecting...", false, "")
+      if global.component.button(
+        90, 150, 60, 20, "Cancel"
+      ) {
+        global.archipelago.menuState = 1
+      }
+    }
+    case 4 {
+      global.component.label(80, 15, 300, 20, "Failed to connect to slot, check connection info", false, "")
+      if global.component.button(
+        90, 150, 60, 20, "Cancel"
+      ) {
+        global.archipelago.menuState = 1
+      }
+    }
+  }
+  draw_set_color(col)
 }

@@ -255,8 +255,7 @@ global.archipelago.menuState = 0
 global.archipelago.menuTimeout = 0
 global.archipelago.connectionState = "disconnected"
 global.archipelago.save = {
-  url: "archipelago.gg",
-  port: "38281",
+  url: "archipelago.gg:38281",
   slotName: "Fern",
   slotPassword: "",
   receivedItems: [],
@@ -281,6 +280,9 @@ global.archipelago.endingProcessed = false
 global.archipelago.processDeathlink = false
 global.archipelago.lastDeathLink = 0
 global.archipelago.deathLinkSource = ""
+global.archipelago.slotNameInput = new TextInputUi(13487565, 1973270)
+global.archipelago.slotPasswordInput = new TextInputUi(13487565, 1973270)
+global.archipelago.urlInput = new TextInputUi(13487565, 1973270)
 
 global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 0, 0)
 

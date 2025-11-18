@@ -6,11 +6,9 @@ if (menu != noone) {
       global.archipelago.apclient_disconnect()
     }
     global.archipelago.menuState = 0
-    global.archipelago.menuTimeout = 0
     global.archipelago.connectionState = "disconnected"
     global.archipelago.save = {
-      url: "archipelago.gg",
-      port: "38281",
+      url: "archipelago.gg:38281",
       slotName: "Fern",
       slotPassword: "",
       receivedItems: [],
@@ -39,44 +37,30 @@ if (menu != noone) {
   } else if (menu.state == 8) {
     match global.archipelago.menuState {
       case 0 {
-        -- wait on menu state 8 until we are connected
-        -- go back if there is a connection error
         menu.start_timer = 0
-
         if (file_exists("f_save_" + string(global.current_file) + ".archipelago.save")) {
           let archipelagoSaveFile = file_text_open_read("f_save_" + string(global.current_file) + ".archipelago.save")
           let archipelagoSaveString = file_text_readln(archipelagoSaveFile)
           file_text_close(archipelagoSaveFile)
           global.archipelago.save = json_parse(archipelagoSaveString)
-          global.archipelago.apclient_connect("", "Rusted Moss", global.archipelago.save.url + ":" + global.archipelago.save.port)
-          global.archipelago.menuState = 1
-          global.archipelago.menuTimeout = 0
         } else {
-          -- todo tell user to enter connection info
-          -- creates file for the user with default values
           global.archipelago.saveArchipelagoData()
-
-          menu.state = 14
         }
+        global.archipelago.menuState = 1
       }
       case 1 {
         menu.start_timer = 0
-
-        if (global.archipelago.connectionState == "socketConnected") {
-          global.archipelago.apclient_connect_slot(global.archipelago.save.slotName, global.archipelago.save.slotPassword, "[]")
-          global.archipelago.menuState = 2
-          global.archipelago.menuTimeout = 0
-        }
-
-        global.archipelago.menuTimeout += 1
-        if (global.archipelago.menuTimeout > 600) {
-          -- todo tell user to verify connection info is correct
-          menu.state = 14
-        }
       }
       case 2 {
         menu.start_timer = 0
 
+        if (global.archipelago.connectionState == "socketConnected") {
+          global.archipelago.apclient_connect_slot(global.archipelago.save.slotName, global.archipelago.save.slotPassword, "[]")
+          global.archipelago.menuState = 3
+        }
+      }
+      case 3 {
+        menu.start_timer = 0
         if (global.archipelago.connectionState == "slotConnected") {
           -- resend all checkedLocations that were stored in the save file in case they were not sent properly
           let checkedItems = "["
@@ -93,14 +77,15 @@ if (menu != noone) {
           }
           global.archipelago.apclient_location_checks(checkedItems + "]")
 
-          global.archipelago.menuState = 3
+          global.archipelago.menuState = 5
         }
 
-        global.archipelago.menuTimeout += 1
-        if (global.archipelago.menuTimeout > 600 or global.archipelago.connectionState == "slotRefused") {
-          -- todo tell user to verify connection info is correct and go back to main menu
-          menu.state = 14
+        if (global.archipelago.connectionState == "slotRefused") {
+          global.archipelago.menuState = 4
         }
+      }
+      case 4 {
+        menu.start_timer = 0
       }
     }
   -- the delete file state
@@ -117,9 +102,9 @@ if (menu != noone) {
 let game = instance_find(ogame, 0)
 if (game != noone) {
   -- process items on file load
-  if (global.archipelago.menuState == 3) {
+  if (global.archipelago.menuState == 5) {
     global.archipelago.processItems = true
-    global.archipelago.menuState = 4
+    global.archipelago.menuState = 0
   }
   -- pause gamestate for teleporting to start
   if (global.gamestate == 2) {
