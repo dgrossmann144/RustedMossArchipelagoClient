@@ -119,11 +119,9 @@ if (game != noone) {
   } else if (global.gamestate == 9) {
     if (game.dead_timer == 89) {
       if (global.archipelago.deathLink and !global.archipelago.menuDeath) {
-        global.rmml.log("Sent deathlink")
-        let epoch = floor(date_create_datetime(1970, 1, 1, 0, 0, 0))
-        let unixTime = floor(date_second_span(epoch, date_current_datetime()))
-        global.archipelago.lastDeathLink = unixTime
+        global.rmml.log("Sending deathlink")
         global.archipelago.apclient_death_link("")
+        global.archipelago.lastDeathLink = global.archipelago.apclient_get_server_time()
       }
       global.archipelago.menuDeath = false
       global.archipelago.processItems = true
@@ -593,12 +591,11 @@ match pollStatus {
     let dataProxy = global.archipelago.apclient_json_proxy(0, "data")
     if (dataProxy != -1) {
       let time = global.archipelago.apclient_json_number_at(dataProxy, "time")
-      if (global.archipelago.lastDeathLink + 10 < time) {
-        let epoch = floor(date_create_datetime(1970, 1, 1, 0, 0, 0))
-        let unixTime = floor(date_second_span(epoch, date_current_datetime()))
-        global.archipelago.lastDeathLink = unixTime
+      if (abs(time - global.archipelago.lastDeathLink) > 5) {
         global.archipelago.deathLinkSource = global.archipelago.apclient_json_string_at(dataProxy, "source")
         global.archipelago.processDeathlink = true
+        global.archipelago.menuDeath = true
+        global.archipelago.lastDeathLink = time
       }
     }
   }
