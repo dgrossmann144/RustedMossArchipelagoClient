@@ -564,6 +564,7 @@ match pollStatus {
     }
     global.archipelago.ending = global.archipelago.apclient_json_number_at(0, "ending")
     global.archipelago.shopDiscountPercentage = global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100
+    global.archipelago.noInfiniteGrapple = global.archipelago.apclient_json_number_at(0, "no_infinite_grapple")
   }
   case "ap_items_received" {
     global.rmml.log("items received")
