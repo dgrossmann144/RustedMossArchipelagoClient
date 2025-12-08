@@ -53,18 +53,6 @@ if (flagPickup != noone) {
   instance_destroy(flagPickup)
 }
 
-let chest = noone -- instance_find(ochest, 0)
-if (chest != noone) {
-  if (!variable_struct_exists(global.archipelago.save.checkedLocations, chest.id_string)) {
-    instance_create_depth(chest.x - 8, chest.y - 6, chest.depth, omod_instance, {
-      type: "archipelagoItem",
-      name: chest.id_string
-    })
-    ds_queue_enqueue(global.archipelago.messageQueue, chest.id_string)
-  }
-  instance_destroy(chest)
-}
-
 let roomName = room_get_name(room_get())
 match roomName {
   case "rm_snow_intro_1" {

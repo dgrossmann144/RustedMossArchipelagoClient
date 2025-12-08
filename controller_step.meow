@@ -398,7 +398,7 @@ if (shop != noone) {
 let hook = instance_find(ohook, 0)
 if (hook != noone and !global.archipelago.grappleUpgradeEnabled) {
   -- disables hook pull
---  hook.pulled = true
+  hook.pulled = true
 }
 
 let player = instance_find(oplayer, 0)
@@ -446,7 +446,6 @@ if (player != noone) {
         case "HP_UP" { hpCount += 1 }
         case "MP_UP" { mpCount += 1 }
         case "TP_UP" { tpCount += 1 }
-        -- case "Chest" { global.munney += 22 }
         case "Fae_Silver" { faeSilverCount += 1 }
         case "Flag" { flagCount += 1 }
         case "Pistol" { global.weapon_data[5].found = 1 }
@@ -493,18 +492,18 @@ if (player != noone) {
 
       i += 1
     }
-    global.stat_max_hp = 7 + hpCount + 20
-    global.stat_max_mp = 21 + (2 * mpCount) + (3 * flagCount) + 20
+    global.stat_max_hp = 7 + hpCount
+    global.stat_max_mp = 21 + (2 * mpCount) + (3 * flagCount)
     -- set flags_found to enable juni's climb
     ds_map_set(global.save_data, "flags_found", flagCount)
-    global.max_trinkets_points_ = 10 + (2 * tpCount) + 20
+    global.max_trinkets_points_ = 10 + (2 * tpCount)
     global.metal_found_ = faeSilverCount
-    -- if (titaniaPieceCount >= 8) {
+    if (titaniaPieceCount >= 8) {
       story_flag_set("titania_head_activated", true)
       titaniaPieceCount = 7
-    -- } else {
-    --  story_flag_set("titania_head_activated", false)
-    -- }
+    } else {
+      story_flag_set("titania_head_activated", false)
+    }
     let roomName = room_get_name(room_get())
     if (roomName == "rm_forest_boss") {
       if (global.archipelago.hardMaya) {
@@ -516,10 +515,10 @@ if (player != noone) {
       global.stars_ = titaniaPieceCount
     }
 
-    -- if (grappleCount >= 2) {
-    --  global.archipelago.grappleUpgradeEnabled = true
+    if (grappleCount >= 2) {
+      global.archipelago.grappleUpgradeEnabled = true
       global.HOOK_UPGRADE_0_ = true
-    -- }
+    }
 
     if (grappleCount >= 3) {
       global.archipelago.infiniteGrappleEnabled = true
