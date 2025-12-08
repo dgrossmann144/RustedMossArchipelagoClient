@@ -53,6 +53,18 @@ if (flagPickup != noone) {
   instance_destroy(flagPickup)
 }
 
+let chest = noone -- instance_find(ochest, 0)
+if (chest != noone) {
+  if (!variable_struct_exists(global.archipelago.save.checkedLocations, chest.id_string)) {
+    instance_create_depth(chest.x - 8, chest.y - 6, chest.depth, omod_instance, {
+      type: "archipelagoItem",
+      name: chest.id_string
+    })
+    ds_queue_enqueue(global.archipelago.messageQueue, chest.id_string)
+  }
+  instance_destroy(chest)
+}
+
 let roomName = room_get_name(room_get())
 match roomName {
   case "rm_snow_intro_1" {
@@ -297,7 +309,7 @@ with otile_switcher_boss {
   event_perform(ev_other, ev_user0)
 }
 
-if (!global.archipelago.noInfiniteGrapple and !variable_struct_exists(global.archipelago.save.checkedLocations, "Infinite_Grapple")) {
+if (global.archipelago.infiniteGrappleRandomized and !variable_struct_exists(global.archipelago.save.checkedLocations, "Infinite_Grapple")) {
   let infiniteGrappleRoom = false
   match roomName {
     -- todo probably don't let the boss rush rooms do this
