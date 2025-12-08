@@ -410,10 +410,12 @@ if (player != noone) {
     global.HOOK_UNLOCKED_ = true
   }
 
-  if (!global.archipelago.infiniteGrappleEnabled) {
+  if (!global.archipelago.noInfiniteGrapple) {
+    if (global.archipelago.infiniteGrappleEnabled) {
+      player.endless_hook = true
+    } else {
     player.endless_hook = false
-  } else {
-    player.endless_hook = true
+    }
   }
 
   -- seems like the "default" player states when we would want to do deathlink I think

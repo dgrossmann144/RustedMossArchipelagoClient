@@ -297,7 +297,7 @@ with otile_switcher_boss {
   event_perform(ev_other, ev_user0)
 }
 
-if (!noInfiniteGrapple and !variable_struct_exists(global.archipelago.save.checkedLocations, "Infinite_Grapple")) {
+if (!global.archipelago.noInfiniteGrapple and !variable_struct_exists(global.archipelago.save.checkedLocations, "Infinite_Grapple")) {
   let infiniteGrappleRoom = false
   match roomName {
     -- todo probably don't let the boss rush rooms do this
