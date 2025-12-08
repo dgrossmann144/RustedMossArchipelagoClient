@@ -405,7 +405,7 @@ let player = instance_find(oplayer, 0)
 if (player != noone) {
   if (!array_contains(global.archipelago.save.receivedItems, "Grappling_Hook")) {
     -- disables grappling hook
-    global.HOOK_UNLOCKED_ = true -- player.can_hook_delay = 15
+    player.can_hook_delay = 15
   } else {
     global.HOOK_UNLOCKED_ = true
   }
