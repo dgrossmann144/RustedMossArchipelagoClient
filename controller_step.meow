@@ -172,7 +172,7 @@ if (game != noone) {
   let archipelagoInstanceExists = false
   while (i < numModInstance) {
     let modInstance = instance_find(omod_instance, i)
-    if (modInstance.type == "archipelagoItem") {
+    if (modInstance.mod == "archipelago") {
       archipelagoInstanceExists = true
       break
     }
@@ -182,60 +182,27 @@ if (game != noone) {
   -- handle creating npc trinket and boss titania piece locations
   if (!archipelagoInstanceExists) {
     if (story_flag_triggered("face_delivered") and roomName == "rm_sea_8_alt" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_sea_8_alt")) {
-      instance_create_depth(180, 150, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_trinket_rm_sea_8_alt"
-      })
+      global.archipelago.createItem(180, 150, 0, "pickup_trinket_rm_sea_8_alt")
     } else if (story_flag_triggered("lilly_triggered") and roomName == "rm_forest_lilly" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_forest_lilly")) {
-      instance_create_depth(184, 176, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_trinket_rm_forest_lilly"
-      })
+      global.archipelago.createItem(184, 176, 0, "pickup_trinket_rm_forest_lilly")
     } else if (story_flag_triggered("nell_meet_third") and roomName == "rm_lake_extra_6" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_lake_extra_6")) {
-      instance_create_depth(80, 160, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_trinket_rm_lake_extra_6"
-      })
+      global.archipelago.createItem(80, 160, 0, "pickup_trinket_rm_lake_extra_6")
     } else if (story_flag_triggered("eli_meet_third") and roomName == "rm_lab_red_alt" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_lab_red_alt")) {
-      instance_create_depth(552, 360, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_trinket_rm_lab_red_alt"
-      })
+      global.archipelago.createItem(552, 360, 0, "pickup_trinket_rm_lab_red_alt")
     } else if (ds_map_exists(global.save_data, "boss_book") and roomName == "rm_test_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_test_boss")) {
-      instance_create_depth(400, 184, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_star_rm_test_boss"
-      })
+      global.archipelago.createItem(400, 184, 0, "pickup_star_rm_test_boss")
     } else if (ds_map_exists(global.save_data, "boss_sword") and roomName == "rm_mount_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_mount_boss")) {
-      instance_create_depth(488, 204, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_star_rm_mount_boss"
-      })
+      global.archipelago.createItem(488, 204, 0, "pickup_star_rm_mount_boss")
     } else if (ds_map_exists(global.save_data, "boss_angel") and roomName == "rm_sea_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_sea_boss")) {
-      instance_create_depth(448, 455, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_star_rm_sea_boss"
-      })
+      global.archipelago.createItem(448, 455, 0, "pickup_star_rm_sea_boss")
     } else if (ds_map_exists(global.save_data, "boss_tar_beaten") and roomName == "rm_catacombs_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_catacombs_boss")) {
-      instance_create_depth(960, 400, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_star_rm_catacombs_boss"
-      })
+      global.archipelago.createItem(960, 400, 0, "pickup_star_rm_catacombs_boss")
     } else if (ds_map_exists(global.save_data, "boss_worm") and roomName == "rm_lake_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_lake_boss")) {
-      instance_create_depth(575, 219, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_star_rm_lake_boss"
-      })
+      global.archipelago.createItem(575, 219, 0, "pickup_star_rm_lake_boss")
     } else if (story_flag_triggered("maya_forest_win") and roomName == "rm_forest_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_forest_boss")) {
-      instance_create_depth(312, 280, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_star_rm_forest_boss"
-      })
+      global.archipelago.createItem(312, 280, 0, "pickup_star_rm_forest_boss")
     } else if (story_flag_triggered("spirella_defeated") and roomName == "rm_lab_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_lab_boss")) {
-      instance_create_depth(442, 204, 0, omod_instance, {
-        type: "archipelagoItem",
-        name: "pickup_star_rm_lab_boss"
-      })
+      global.archipelago.createItem(442, 204, 0, "pickup_star_rm_lab_boss")
     }
   }
 
@@ -359,6 +326,15 @@ if (shop != noone) {
       {cost_value: 1, found: false},
       {cost_value: 1, found: false},
       {cost_value: 1, found: false}]
+      ds_map_set(global.description_map_, "t02", global.archipelago.getShopName("trinket_data_2"))
+      ds_map_set(global.description_map_, "t03", global.archipelago.getShopName("trinket_data_3"))
+      ds_map_set(global.description_map_, "t05", global.archipelago.getShopName("trinket_data_5"))
+      ds_map_set(global.description_map_, "t09", global.archipelago.getShopName("trinket_data_9"))
+      ds_map_set(global.description_map_, "t10", global.archipelago.getShopName("trinket_data_10"))
+      ds_map_set(global.description_map_, "t15", global.archipelago.getShopName("trinket_data_15"))
+      ds_map_set(global.description_map_, "t22", global.archipelago.getShopName("trinket_data_22"))
+      ds_map_set(global.description_map_, "t24", global.archipelago.getShopName("trinket_data_24"))
+      ds_map_set(global.description_map_, "t31", global.archipelago.getShopName("trinket_data_31"))
   }
 
   if (shop.state == 5 and global.archipelago.shopState == 1) {
@@ -392,6 +368,15 @@ if (shop != noone) {
     }
 
     global.trinket_data_ = global.archipelago.tempTrinketData
+    ds_map_set(global.description_map_, "t02", global.archipelago.shopTrinkets[0])
+    ds_map_set(global.description_map_, "t03", global.archipelago.shopTrinkets[1])
+    ds_map_set(global.description_map_, "t05", global.archipelago.shopTrinkets[2])
+    ds_map_set(global.description_map_, "t09", global.archipelago.shopTrinkets[3])
+    ds_map_set(global.description_map_, "t10", global.archipelago.shopTrinkets[4])
+    ds_map_set(global.description_map_, "t15", global.archipelago.shopTrinkets[5])
+    ds_map_set(global.description_map_, "t22", global.archipelago.shopTrinkets[6])
+    ds_map_set(global.description_map_, "t24", global.archipelago.shopTrinkets[7])
+    ds_map_set(global.description_map_, "t31", global.archipelago.shopTrinkets[8])
   }
 }
 
@@ -531,6 +516,23 @@ if (global.mp < 5) {
   global.mp = 5
 }
 
+-- split scouting in chunks to stay under 1000ms
+if (global.archipelago.connectionState == "slotConnected" and global.archipelago.scoutLocation < global.archipelago.maxLocation) {
+  let i = 0
+  let scoutLocations = "[" + string(global.archipelago.scoutLocation)
+  while (i < 60 and global.archipelago.scoutLocation < global.archipelago.maxLocation) {
+    global.archipelago.scoutLocation += 1
+    i += 1
+    -- todo: implement options for the dlcs
+    if ( global.archipelago.scoutLocation >= global.archipelago.startId + 34 and global.archipelago.scoutLocation <= global.archipelago.startId + 37) {
+      continue
+    }
+    scoutLocations += "," + string(global.archipelago.scoutLocation)
+  }
+  scoutLocations += "]"
+  global.archipelago.apclient_location_scouts(scoutLocations)
+}
+
 
 global.archipelago.apclient_poll()
 
@@ -558,6 +560,7 @@ match pollStatus {
     global.archipelago.connectionState = "slotConnected"
     global.archipelago.hardMaya = global.archipelago.apclient_json_number_at(0, "hard_maya")
     global.archipelago.deathLink = global.archipelago.apclient_json_number_at(0, "deathlink")
+    global.archipelago.playerNumber = global.archipelago.apclient_get_player_number()
     if (global.archipelago.deathLink == 1) {
       global.rmml.log("Enabling deathlink")
       global.archipelago.apclient_connect_update("[\"DeathLink\"]")
@@ -596,6 +599,36 @@ match pollStatus {
         global.archipelago.processDeathlink = true
         global.archipelago.menuDeath = true
         global.archipelago.lastDeathLink = time
+      }
+    }
+  }
+  case "ap_location_info" {
+    let numItems = global.archipelago.apclient_json_number_at(0, "len")
+    let items = global.archipelago.apclient_json_proxy(0, "items")
+    let flags = global.archipelago.apclient_json_proxy(0, "flags")
+    let players = global.archipelago.apclient_json_proxy(0, "players")
+    let locations = global.archipelago.apclient_json_proxy(0, "locations")
+    
+    let i = 0
+    while (i < numItems) {
+      let player = global.archipelago.apclient_json_number_at(players, string(i))
+      let location = global.archipelago.apclient_json_number_at(locations, string(i))
+      let flag = global.archipelago.apclient_json_number_at(flags, string(i))
+      let id = global.archipelago.apclient_json_number_at(items, string(i))
+      let type = ""
+      if (player == global.archipelago.playerNumber) {
+        type = global.archipelago.getItemType(id)
+      }
+      else {
+        type = "archipelagoItem"
+      }
+      ds_map_set(global.archipelago.scoutItems, string(location), {
+        id: id,
+        type: type
+      })
+      i += 1
+      if (location == string(global.archipelago.maxLocation)) {
+        ds_queue_enqueue(global.archipelago.messageQueue, "Last location scouted")
       }
     }
   }

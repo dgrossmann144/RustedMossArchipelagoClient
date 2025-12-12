@@ -283,219 +283,202 @@ global.archipelago.deathLinkSource = ""
 global.archipelago.slotNameInput = new TextInputUi(13487565, 1973270)
 global.archipelago.slotPasswordInput = new TextInputUi(13487565, 1973270)
 global.archipelago.urlInput = new TextInputUi(13487565, 1973270)
+global.archipelago.scoutItems = ds_map_create()
+global.archipelago.playerNumber = -1
+global.archipelago.startId = 144000000
+global.archipelago.scoutLocation = global.archipelago.startId
+global.archipelago.maxLocation = global.archipelago.startId + 103
 
-global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 0, 0)
+global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 8, 8)
+
+global.archipelago.createItem = fun(x, y, depth, location) {
+  let item = ds_map_find_value(global.archipelago.scoutItems, global.archipelago.getLocationId(location))
+  instance_create_depth(x, y, depth, omod_instance, {
+    location: location,
+    type: item.type,
+    mod: "archipelago"
+  })
+}
+
+global.archipelago.getLocationId = fun(location) {
+  match location {
+    case "pickup_trinket_rm_underhang_boss_after" { return "144000000" }
+    case "pickup_trinket_rm_catacombs_extra_5"    { return "144000001" }
+    case "trinket_data_2"                         { return "144000002" }
+    case "trinket_data_3"                         { return "144000003" }
+    case "pickup_trinket_rm_sea_8_alt"            { return "144000004" }
+    case "trinket_data_5"                         { return "144000005" }
+    case "pickup_trinket_rm_sea_mid_2_alt"        { return "144000006" }
+    case "pickup_trinket_rm_forest_lilly"         { return "144000007" }
+    case "pickup_trinket_rm_test_5"               { return "144000008" }
+    case "trinket_data_9"                         { return "144000009" }
+    case "trinket_data_10"                        { return "144000010" }
+    case "pickup_trinket_rm_mount_ameli_1"        { return "144000011" }
+    case "pickup_trinket_rm_forest_extra_2"       { return "144000012" }
+    case "pickup_trinket_rm_mount_right_alt_2"    { return "144000013" }
+    case "pickup_trinket_rm_forest_cafe_2"        { return "144000014" }
+    case "trinket_data_15"                        { return "144000015" }
+    case "pickup_trinket_rm_moss_top_hidden_4"    { return "144000016" }
+    case "pickup_trinket_rm_lab_main_left_0"      { return "144000017" }
+    case "pickup_trinket_rm_catacombs_alt_secret" { return "144000018" }
+    case "pickup_trinket_rm_moss_hidden_0"        { return "144000019" }
+    case "pickup_trinket_rm_sea_arena_reward"     { return "144000020" }
+    case "pickup_trinket_rm_hell_garden_alt"      { return "144000021" }
+    case "trinket_data_22"                        { return "144000022" }
+    case "pickup_trinket_rm_test_hidden_2"        { return "144000023" }
+    case "trinket_data_24"                        { return "144000024" }
+    case "pickup_trinket_rm_mount_top_left_4_alt" { return "144000025" }
+    case "pickup_trinket_rm_tea_party"            { return "144000026" }
+    case "pickup_trinket_rm_lab_bed_2"            { return "144000027" }
+    case "pickup_trinket_rfae_h0"                 { return "144000028" }
+    case "pickup_trinket_rm_lab_red_alt"          { return "144000029" }
+    case "pickup_trinket_rm_lake_extra_6"         { return "144000030" }
+    case "trinket_data_31"                        { return "144000031" }
+    case "pickup_trinket_rm_meadow_to_snow_0"     { return "144000032" }
+    case "pickup_trinket_rm_snow_7"               { return "144000033" }
+    -- dlc trinkets 34-37
+    case "Grappling_Hook"                         { return "144000038" }
+    case "Grappling_Hook_Upgrade"                 { return "144000039" }
+    case "Infinite_Grapple"                       { return "144000040" }
+    case "Charge_Jump"                            { return "144000041" }
+    case "Grenade"                                { return "144000042" }
+    case "pickup_star_rm_test_boss"               { return "144000043" }
+    case "pickup_star_rm_mount_boss"              { return "144000044" }
+    case "pickup_star_rm_sea_boss"                { return "144000045" }
+    case "pickup_star_rm_lab_boss"                { return "144000046" }
+    case "pickup_star_rm_catacombs_boss"          { return "144000047" }
+    case "pickup_star_rm_forest_boss"             { return "144000048" }
+    case "Titania_Piece"                          { return "144000049" }
+    case "pickup_star_rm_lake_boss"               { return "144000050" }
+    case "pickup_hp_rm_test_hidden"               { return "144000051" }
+    case "pickup_hp_rm_test_hidden_3"             { return "144000052" }
+    case "pickup_hp_rm_test_before_boss_alt"      { return "144000053" }
+    case "pickup_hp_rm_mount_4_half_right"        { return "144000054" }
+    case "pickup_hp_rm_forest_cafe_3"             { return "144000055" }
+    case "pickup_hp_rm_sea_extra_2"               { return "144000056" }
+    case "pickup_hp_rm_underhang_b20"             { return "144000057" }
+    case "pickup_mp_rm_lake_hidden_3"             { return "144000058" }
+    case "pickup_mp_rm_forest_extra_3"            { return "144000059" }
+    case "pickup_mp_rm_sea_left_2"                { return "144000060" }
+    case "pickup_mp_rm_catacombs_extra_1"         { return "144000061" }
+    case "pickup_mp_rm_sea_2"                     { return "144000062" }
+    case "pickup_mp_rm_moss_hidden_1"             { return "144000063" }
+    case "pickup_mp_rm_4_hidden"                  { return "144000064" }
+    case "pickup_mp_rm_mount_intro_begin"         { return "144000065" }
+    case "pickup_mp_rm_test_alt_alt"              { return "144000066" }
+    case "pickup_tp_rm_moss_8"                    { return "144000067" }
+    case "pickup_tp_rm_lake_hidden_4"             { return "144000068" }
+    case "pickup_tp_rm_forest_extra_0"            { return "144000069" }
+    case "pickup_tp_rm_hidden_4"                  { return "144000070" }
+    case "pickup_tp_rm_catacombs_extra_3"         { return "144000071" }
+    case "pickup_tp_rm_moss_3"                    { return "144000072" }
+    case "pickup_tp_rm_mount_10_alt"              { return "144000073" }
+    case "pickup_tp_rm_underhang_extra_2"         { return "144000074" }
+    case "pickup_tp_rm_moss_top_cave"             { return "144000075" }
+    case "pickup_dmg_rm_mount_3_alt_hidden"       { return "144000076" }
+    case "pickup_dmg_rm_mount_right_4"            { return "144000077" }
+    case "pickup_dmg_rm_sea_new_2_alt"            { return "144000078" }
+    case "pickup_dmg_rm_sea_mid_left_1"           { return "144000079" }
+    case "pickup_dmg_rm_lab_bleft_0"              { return "144000080" }
+    case "pickup_dmg_rm_lab_to_boss_4"            { return "144000081" }
+    case "pickup_dmg_rm_lab_save_right_2"         { return "144000082" }
+    case "pickup_dmg_rm_catacombs_extra_4_alt"    { return "144000083" }
+    case "pickup_dmg_rm_catacombs_extra_2"        { return "144000084" }
+    case "pickup_dmg_rm_forest_branch_2_6"        { return "144000085" }
+    case "pickup_dmg_rm_forest_branch_2_2"        { return "144000086" }
+    case "pickup_dmg_rm_lake_hidden_1"            { return "144000087" }
+    case "pickup_dmg_rm_lake_hidden_5"            { return "144000088" }
+    case "pickup_dmg_rfae_h1"                     { return "144000089" }
+    case "pickup_dmg_rfae_h4"                     { return "144000090" }
+    case "pickup_dmg_rfae_h2"                     { return "144000091" }
+    case "pickup_dmg_rm_underhang_extra_1"        { return "144000092" }
+    case "pickup_flag_rm_forest_to_rain"          { return "144000093" }
+    case "pickup_flag_rm_mount_4_half_right"      { return "144000094" }
+    case "pickup_flag_rm_catacombs_to_moss_2"     { return "144000095" }
+    case "pickup_flag_rm_moss_top_hidden_4"       { return "144000096" }
+    case "pickup_flag_rm_sea_mid_right_1"         { return "144000097" }
+    case "pickup_flag_rm_mount_shortcut"          { return "144000098" }
+    case "pickup_weapon_rm_moss_top_cave"         { return "144000099" }
+    case "pickup_weapon_rm_catacombs_right_extra" { return "144000100" }
+    case "pickup_weapon_rm_forest_extra_4"        { return "144000101" }
+    case "pickup_weapon_rm_lake_hidden_2"         { return "144000102" }
+    case "pickup_weapon_rm_mount_top_boss"        { return "144000103" }
+    else                                          { return ""          }
+  }
+}
+
+global.archipelago.getShopName = fun(location) {
+  let item = ds_map_find_value(global.archipelago.scoutItems, global.archipelago.getLocationId(location))
+  if (item.type == "archipelagoItem") {
+    return ["Archipelago Item", "Who knows where this came from."]
+  }
+  if (item.id <= 144000037) {
+    if (item.id == 144000002) { return global.archipelago.shopTrinkets[0]}
+    if (item.id == 144000003) { return global.archipelago.shopTrinkets[1]}
+    if (item.id == 144000005) { return global.archipelago.shopTrinkets[2]}
+    if (item.id == 144000009) { return global.archipelago.shopTrinkets[3]}
+    if (item.id == 144000010) { return global.archipelago.shopTrinkets[4]}
+    if (item.id == 144000015) { return global.archipelago.shopTrinkets[5]}
+    if (item.id == 144000022) { return global.archipelago.shopTrinkets[6]}
+    if (item.id == 144000024) { return global.archipelago.shopTrinkets[7]}
+    if (item.id == 144000031) { return global.archipelago.shopTrinkets[8]}
+    let id = item.id - global.archipelago.startId
+    let str = "t"
+    if (id <= 9) {
+      str += "0"
+    }
+    str += string(id)
+    return ds_map_find_value(global.description_map_, str)
+  }
+  match item.id {
+    case 144000038 { return ["Grappling Hook", ""] }
+    case 144000039 { return ["Charge Jump", ""] }
+    case 144000040 { return ["Grenade", ""] }
+    case 144000041 { return ["Titania Piece", ""] }
+    case 144000042 { return ["HP UP", ""] }
+    case 144000043 { return ["MP UP", ""] }
+    case 144000044 { return ["TP UP", ""] }
+    case 144000045 { return ["Fae Silver", ""] }
+    case 144000046 { return ["Flag", ""] }
+    case 144000047 { return ["Pistol", ""] }
+    case 144000048 { return ["Shotgun", ""] }
+    case 144000049 { return ["Rocket Launcher", ""] }
+    case 144000050 { return ["Sniper", ""] }
+    case 144000051 { return ["Bolt Dispenser", ""] }
+    case 144000052 { return ["Rifle", ""] }
+    case 144000053 { return ["22 Munny", "Deal of the Century!"] }
+    else { return ["Nothing", "What even is this? You shouldn't buy it just to be safe."] }
+  }
+}
+
+global.archipelago.getItemType = fun(id) {
+  if (id <= 144000037) { return "Trinket" }
+  match id {
+    case 144000038 { return "Grappling_Hook" }
+    case 144000039 { return "Charge_Jump" }
+    case 144000040 { return "Grenade" }
+    case 144000041 { return "Titania_Piece" }
+    case 144000042 { return "HP_UP" }
+    case 144000043 { return "MP_UP" }
+    case 144000044 { return "TP_UP" }
+    case 144000045 { return "Fae_Silver" }
+    case 144000046 { return "Flag" }
+    case 144000047 { return "Pistol" }
+    case 144000048 { return "Shotgun" }
+    case 144000049 { return "Rocket_Launcher" }
+    case 144000050 { return "Sniper" }
+    case 144000051 { return "Bolt_Dispenser" }
+    case 144000052 { return "Rifle" }
+    case 144000053 { return "Chest" }
+    else           { return "" }
+  }
+}
 
 global.archipelago.checkLocation = fun(location) {
-  let locationId = ""
-  match location {
-    case "pickup_hp_rm_test_hidden" { locationId = "144000005" }
-    case "pickup_hp_rm_test_hidden_3" { locationId = "144000006" }
-    case "pickup_hp_rm_test_before_boss_alt" { locationId = "144000007" }
-    case "pickup_hp_rm_mount_4_half_right" { locationId = "144000032" }
-    case "pickup_hp_rm_forest_cafe_3" { locationId = "144000071" }
-    case "pickup_hp_rm_sea_extra_2" { locationId = "144000042" }
-    case "pickup_hp_rm_underhang_b20" { locationId = "144000089" }
-    case "pickup_mp_rm_lake_hidden_3" { locationId = "144000083" }
-    case "pickup_mp_rm_forest_extra_3" { locationId = "144000072" }
-    case "pickup_mp_rm_sea_left_2" { locationId = "144000044" }
-    case "pickup_mp_rm_catacombs_extra_1" { locationId = "144000059" }
-    case "pickup_mp_rm_sea_2" { locationId = "144000043" }
-    case "pickup_mp_rm_moss_hidden_1" { locationId = "144000019" }
-    case "pickup_mp_rm_4_hidden" { locationId = "144000009" }
-    case "pickup_mp_rm_mount_intro_begin" { locationId = "144000033" }
-    case "pickup_mp_rm_test_alt_alt" { locationId = "144000008" }
-    case "pickup_tp_rm_moss_8" { locationId = "144000022" }
-    case "pickup_tp_rm_lake_hidden_4" { locationId = "144000084" }
-    case "pickup_tp_rm_forest_extra_0" { locationId = "144000073" }
-    case "pickup_tp_rm_hidden_4" { locationId = "144000010" }
-    case "pickup_tp_rm_catacombs_extra_3" { locationId = "144000060" }
-    case "pickup_tp_rm_moss_3" { locationId = "144000021" }
-    case "pickup_tp_rm_mount_10_alt" { locationId = "144000034" }
-    case "pickup_tp_rm_underhang_extra_2" { locationId = "144000090" }
-    case "pickup_tp_rm_moss_top_cave" { locationId = "144000020" }
-    case "pickup_weapon_rm_moss_top_cave" { locationId = "144000012" }
-    case "pickup_weapon_rm_catacombs_right_extra" { locationId = "144000055" }
-    case "pickup_weapon_rm_forest_extra_4" { locationId = "144000064" }
-    case "pickup_weapon_rm_lake_hidden_2" { locationId = "144000077" }
-    case "pickup_weapon_rm_mount_top_boss" { locationId = "144000026" }
-    case "pickup_flag_rm_forest_to_rain" { locationId = "144000076" }
-    case "pickup_flag_rm_mount_4_half_right" { locationId = "144000037" }
-    case "pickup_flag_rm_catacombs_to_moss_2" { locationId = "144000063" }
-    case "pickup_flag_rm_moss_top_hidden_4" { locationId = "144000023" }
-    case "pickup_flag_rm_sea_mid_right_1" { locationId = "144000047" }
-    case "pickup_flag_rm_mount_shortcut" { locationId = "144000011" }
-    case "pickup_star_rm_forest_boss" { locationId = "144000066" }
-    case "pickup_star_rm_mount_boss" { locationId = "144000027" }
-    case "pickup_star_rm_test_boss" { locationId = "144000001" }
-    case "pickup_star_rm_lake_boss" { locationId = "144000078" }
-    case "pickup_star_rm_sea_boss" { locationId = "144000038" }
-    case "pickup_star_rm_catacombs_boss" { locationId = "144000056" }
-    case "pickup_star_rm_lab_boss" { locationId = "144000048" }
-    case "Titania_Piece" { locationId = "144000067" }
-    case "Grenade" { locationId = "144000024" }
-    case "Charge_Jump" { locationId = "144000013" }
-    case "Grappling_Hook" { locationId = "144000000" }
-    case "Grappling_Hook_Upgrade" { locationId = "144000065" }
-    case "Infinite_Grapple" { locationId = "144000092" }
-    case "pickup_dmg_rm_mount_right_4" { locationId = "144000036" }
-    case "pickup_dmg_rm_underhang_extra_1" { locationId = "144000091" }
-    case "pickup_dmg_rm_lake_hidden_5" { locationId = "144000086" }
-    case "pickup_dmg_rm_sea_mid_left_1" { locationId = "144000046" }
-    case "pickup_dmg_rm_lake_hidden_1" { locationId = "144000085" }
-    case "pickup_dmg_rm_lab_bleft_0" { locationId = "144000052" }
-    case "pickup_dmg_rm_forest_branch_2_2" { locationId = "144000075" }
-    case "pickup_dmg_rm_forest_branch_2_6" { locationId = "144000074" }
-    case "pickup_dmg_rm_catacombs_extra_2" { locationId = "144000062" }
-    case "pickup_dmg_rfae_h1" { locationId = "144000097" }
-    case "pickup_dmg_rm_mount_3_alt_hidden" { locationId = "144000035" }
-    case "pickup_dmg_rm_lab_save_right_2" { locationId = "144000054" }
-    case "pickup_dmg_rm_catacombs_extra_4_alt" { locationId = "144000061" }
-    case "pickup_dmg_rm_sea_new_2_alt" { locationId = "144000045" }
-    case "pickup_dmg_rm_lab_to_boss_4" { locationId = "144000053" }
-    case "pickup_dmg_rfae_h2" { locationId = "144000099" }
-    case "pickup_dmg_rfae_h4" { locationId = "144000098" }
-    case "pickup_trinket_rm_mount_top_left_4_alt" { locationId = "144000028" }
-    case "pickup_trinket_rm_snow_7" { locationId = "144000025" }
-    case "pickup_trinket_rm_sea_8_alt" { locationId = "144000040" }
-    case "pickup_trinket_rm_lab_red_alt" { locationId = "144000051" }
-    case "pickup_trinket_rm_tea_party" { locationId = "144000003" }
-    case "pickup_trinket_rm_lab_bed_2" { locationId = "144000049" }
-    case "pickup_trinket_rm_forest_lilly" { locationId = "144000068" }
-    case "pickup_trinket_rm_catacombs_extra_5" { locationId = "144000058" }
-    case "pickup_trinket_rm_sea_mid_2_alt" { locationId = "144000039" }
-    case "pickup_trinket_rm_lake_extra_6" { locationId = "144000082" }
-    case "pickup_trinket_rm_sea_arena_reward" { locationId = "144000041" }
-    case "pickup_trinket_rm_forest_extra_2" { locationId = "144000070" }
-    case "pickup_trinket_rm_moss_hidden_0" { locationId = "144000018" }
-    case "pickup_trinket_rm_test_hidden_2" { locationId = "144000002" }
-    case "pickup_trinket_rm_underhang_boss_after" { locationId = "144000088" }
-    case "pickup_trinket_rm_lab_main_left_0" { locationId = "144000050" }
-    case "pickup_trinket_rm_mount_right_alt_2" { locationId = "144000031" }
-    case "pickup_trinket_rm_meadow_to_snow_0" { locationId = "144000030" }
-    case "pickup_trinket_rfae_h0" { locationId = "144000093" }
-    case "pickup_trinket_rm_catacombs_alt_secret" { locationId = "144000057" }
-    case "pickup_trinket_rm_forest_cafe_2" { locationId = "144000069" }
-    case "pickup_trinket_rm_hell_garden_alt" { locationId = "144000087" }
-    case "pickup_trinket_rm_moss_top_hidden_4" { locationId = "144000014" }
-    case "pickup_trinket_rm_mount_ameli_1" { locationId = "144000029" }
-    case "pickup_trinket_rm_test_5" { locationId = "144000004" }
-    case "trinket_data_2" { locationId = "144000015" }
-    case "trinket_data_3" { locationId = "144000016" }
-    case "trinket_data_9" { locationId = "144000017" }
-    case "trinket_data_31" { locationId = "144000079" }
-    case "trinket_data_15" { locationId = "144000080" }
-    case "trinket_data_22" { locationId = "144000081" }
-    case "trinket_data_5" { locationId = "144000094" }
-    case "trinket_data_10" { locationId = "144000095" }
-    case "trinket_data_24" { locationId = "144000096" }
-  }
+  let locationId = global.archipelago.getLocationId(location)
   if (locationId != "") {
-    let locationName = "Unknown"
-    match locationId {
-      case 144000005 { locationName = "Flatlands HP UP (Bottom)" }
-      case 144000006 { locationName = "Flatlands HP UP (Top Left)" }
-      case 144000007 { locationName = "Flatlands HP UP (Top Right)" }
-      case 144000032 { locationName = "Smoked Forest HP UP" }
-      case 144000071 { locationName = "Living Quarters HP UP" }
-      case 144000042 { locationName = "Mountainside HP UP" }
-      case 144000089 { locationName = "Barrows Ceiling HP UP" }
-      case 144000083 { locationName = "Lake MP UP" }
-      case 144000072 { locationName = "Living Quarters MP UP" }
-      case 144000044 { locationName = "Mountainside MP UP (Bottom)" }
-      case 144000059 { locationName = "Ichor Refinery MP UP" }
-      case 144000043 { locationName = "Mountainside MP UP (Top)" }
-      case 144000019 { locationName = "Factory Roof MP UP" }
-      case 144000009 { locationName = "Flatlands MP UP (Top Right)" }
-      case 144000033 { locationName = "Smoked Forest MP UP" }
-      case 144000008 { locationName = "Flatlands MP UP (Bottom Left)" }
-      case 144000022 { locationName = "Factory Roof TP UP (Top Right)" }
-      case 144000084 { locationName = "Lake TP UP" }
-      case 144000073 { locationName = "Living Quarters TP UP" }
-      case 144000010 { locationName = "Flatlands TP UP" }
-      case 144000060 { locationName = "Ichor Refinery TP UP" }
-      case 144000021 { locationName = "Factory Roof TP UP (Middle)" }
-      case 144000034 { locationName = "Smoked Forest TP UP" }
-      case 144000090 { locationName = "Barrows Ceiling TP UP" }
-      case 144000020 { locationName = "Factory Roof TP UP (Bottom Left)" }
-      case 144000012 { locationName = "Factory Roof Pistol" }
-      case 144000055 { locationName = "Ichor Refinery Shotgun" }
-      case 144000064 { locationName = "Living Quarters Bolt Dispenser" }
-      case 144000077 { locationName = "Lake Rocket Launcher" }
-      case 144000026 { locationName = "Smoked Forest Sniper" }
-      case 144000076 { locationName = "Living Quarters Flag" }
-      case 144000037 { locationName = "Smoked Forest Flag" }
-      case 144000063 { locationName = "Ichor Refinery Flag" }
-      case 144000023 { locationName = "Factory Roof Flag" }
-      case 144000047 { locationName = "Mountainside Flag" }
-      case 144000011 { locationName = "Flatlands Flag" }
-      case 144000066 { locationName = "Living Quarters Titania Piece" }
-      case 144000027 { locationName = "Smoked Forest Titania Piece" }
-      case 144000001 { locationName = "Flatlands Titania Piece" }
-      case 144000078 { locationName = "Lake Titania Piece" }
-      case 144000038 { locationName = "Mountainside Titania Piece" }
-      case 144000056 { locationName = "Ichor Refinery Titania Piece" }
-      case 144000048 { locationName = "Lab Titania Piece" }
-      case 144000067 { locationName = "Living Quarters Titania Piece (Head)" }
-      case 144000024 { locationName = "Snowy Outpost Grenade" }
-      case 144000013 { locationName = "Factory Roof Charge Jump" }
-      case 144000000 { locationName = "Flatlands Grappling Hook" }
-      case 144000065 { locationName = "Living Quarters Grappling Hook Upgrade" }
-      case 144000092 { locationName = "Elfame Infinite Grapple" }
-      case 144000036 { locationName = "Smoked Forest Fae Silver (Top Right)" }
-      case 144000091 { locationName = "Barrows Ceiling Fae Silver" }
-      case 144000086 { locationName = "Lake Fae Silver (Right)" }
-      case 144000046 { locationName = "Mountainside Fae Silver (Bottom)" }
-      case 144000085 { locationName = "Lake Fae Silver (Left)" }
-      case 144000052 { locationName = "Lab Fae Silver (Left)" }
-      case 144000075 { locationName = "Living Quarters Fae Silver (Bottom Left)" }
-      case 144000074 { locationName = "Living Quarters Fae Silver (Top Right)" }
-      case 144000062 { locationName = "Ichor Refinery Fae Silver (Bottom Right)" }
-      case 144000097 { locationName = "Elfame Fae Silver (Left)" }
-      case 144000035 { locationName = "Smoked Forest Fae Silver (Bottom Left)" }
-      case 144000054 { locationName = "Lab Fae Silver (Right)" }
-      case 144000061 { locationName = "Ichor Refinery Fae Silver (Top Left)" }
-      case 144000045 { locationName = "Mountainside Fae Silver (Top)" }
-      case 144000053 { locationName = "Lab Fae Silver (Middle)" }
-      case 144000099 { locationName = "Elfame Fae Silver (Right)" }
-      case 144000098 { locationName = "Elfame Fae Silver (Middle)" }
-      case 144000028 { locationName = "Smoked Forest Short Fuse" }
-      case 144000025 { locationName = "Snowy Outpost Energy Disruptor" }
-      case 144000040 { locationName = "Mountainside Ruby Slippers" }
-      case 144000051 { locationName = "Lab Fae of Love" }
-      case 144000003 { locationName = "Flatlands Thorny Wings" }
-      case 144000049 { locationName = "Lab Maya's Trinket" }
-      case 144000068 { locationName = "Living Quarters Lucky Clover Pearl" }
-      case 144000058 { locationName = "Ichor Refinery Tattered Blindfold" }
-      case 144000039 { locationName = "Mountainside Energy Refiner" }
-      case 144000082 { locationName = "Lake Fae of Hate" }
-      case 144000041 { locationName = "Mountainside Guardian Fae" }
-      case 144000070 { locationName = "Living Quarters Wing Clipper" }
-      case 144000018 { locationName = "Factory Roof Erosive Bullets" }
-      case 144000002 { locationName = "Flatlands HP Overload" }
-      case 144000088 { locationName = "Barrows Ceiling Incendiary Essence" }
-      case 144000050 { locationName = "Lab Rusted Coin" }
-      case 144000031 { locationName = "Smoked Forest Powdered Nightshade" }
-      case 144000030 { locationName = "Smoked Forest Titania's Protection" }
-      case 144000093 { locationName = "Elfame Fern's Trinket" }
-      case 144000057 { locationName = "Ichor Refinery Cleansing Charm" }
-      case 144000069 { locationName = "Living Quarters Cracked Monocle" }
-      case 144000087 { locationName = "Barrows Ceiling Cricket Bone Whip" }
-      case 144000014 { locationName = "Factory Roof Thorny Rose" }
-      case 144000029 { locationName = "Smoked Forest Sprite's Breath" }
-      case 144000004 { locationName = "Flatlands Time Manipulator" }
-      case 144000015 { locationName = "Factory Roof Giant Chambers" }
-      case 144000016 { locationName = "Factory Roof Magnet" }
-      case 144000017 { locationName = "Factory Roof Spiced Gunpowder" }
-      case 144000079 { locationName = "Lake Fae of Glass" }
-      case 144000080 { locationName = "Lake Magnetic Bullets" }
-      case 144000081 { locationName = "Lake Dandelion Bomb" }
-      case 144000094 { locationName = "Elfame Fairy Ointment" }
-      case 144000095 { locationName = "Elfame Powdered Fae Silver" }
-      case 144000096 { locationName = "Elfame Heavy Ammo" }
-    }
     global.archipelago.save.checkedLocations[location] = locationId
-    ds_queue_enqueue(global.archipelago.messageQueue, "Sent location: " + locationName)
+    ds_queue_enqueue(global.archipelago.messageQueue, "Sent location: " + locationId)
     global.archipelago.saveArchipelagoData()
     global.rmml.log("Checked location with locationId: " + locationId)
     global.archipelago.apclient_location_checks("[" + locationId + "]")
@@ -507,5 +490,7 @@ global.archipelago.saveArchipelagoData = fun() {
   file_text_write_string(archipelagoSaveFile, json_stringify(global.archipelago.save))
   file_text_close(archipelagoSaveFile)
 }
+
+global.archipelago.shopTrinkets = [ds_map_find_value(global.description_map_, "t02"),ds_map_find_value(global.description_map_, "t03"),ds_map_find_value(global.description_map_, "t05"),ds_map_find_value(global.description_map_, "t09"),ds_map_find_value(global.description_map_, "t10"),ds_map_find_value(global.description_map_, "t15"),ds_map_find_value(global.description_map_, "t22"),ds_map_find_value(global.description_map_, "t24"),ds_map_find_value(global.description_map_, "t31")]
 
 return undefined

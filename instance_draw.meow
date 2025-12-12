@@ -1,5 +1,27 @@
 match self.type {
-  case "archipelagoItem" {
-    draw_self()
+  case "Flag" {
+    scr_draw_pickup_alt()
+    scr_draw_pickup()
+  }
+  case "Pistol" { 
+    scr_draw_weapon_pickup(self.index)
+  }
+  case "Shotgun" { 
+    scr_draw_weapon_pickup(self.index)
+  }
+  case "Rocket_Launcher" { 
+    scr_draw_weapon_pickup(self.index)
+  }
+  case "Sniper" { 
+    scr_draw_weapon_pickup(self.index)
+  }
+  case "Bolt_Dispenser" { 
+    scr_draw_weapon_pickup(self.index)
+  }
+  case "Rifle" { 
+    scr_draw_weapon_pickup(self.index)
+  }
+  else {
+    scr_draw_pickup()
   }
 }
