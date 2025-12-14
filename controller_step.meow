@@ -26,6 +26,7 @@ if (menu != noone) {
     global.archipelago.deathLink = 0
     global.archipelago.ending = 0
     global.archipelago.shopDiscountPercentage = 1
+    global.archipelago.minMp = 5
     ds_queue_clear(global.archipelago.messageQueue)
     global.archipelago.messageDuration = 0
     global.archipelago.message = ""
@@ -527,8 +528,9 @@ if (player != noone) {
 }
 
 -- enable infinite use of sniper and grenades
-if (global.mp < 5) {
-  global.mp = 5
+let minMp = min(global.archipelago.minMp, global.stat_max_mp)
+if (global.mp < minMp) {
+  global.mp = minMp
 }
 
 
@@ -564,6 +566,7 @@ match pollStatus {
     }
     global.archipelago.ending = global.archipelago.apclient_json_number_at(0, "ending")
     global.archipelago.shopDiscountPercentage = global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100
+    global.archipelago.minMp = global.archipelago.apclient_json_number_at(0, "min_mp")
   }
   case "ap_items_received" {
     global.rmml.log("items received")
