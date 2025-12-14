@@ -490,8 +490,16 @@ if (player != noone) {
 
       i += 1
     }
+    let old_hp = global.stat_max_hp
     global.stat_max_hp = 7 + hpCount
+    if global.stat_max_hp > old_hp {
+      global.hp = global.stat_max_hp
+    }
+    let old_mp = global.stat_max_mp
     global.stat_max_mp = 21 + (2 * mpCount) + (3 * flagCount)
+    if global.stat_max_mp > old_mp {
+      global.mp = global.stat_max_mp
+    }
     -- set flags_found to enable juni's climb
     ds_map_set(global.save_data, "flags_found", flagCount)
     global.max_trinkets_points_ = 10 + (2 * tpCount)
