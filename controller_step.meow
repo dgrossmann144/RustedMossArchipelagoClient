@@ -567,6 +567,7 @@ match pollStatus {
     }
     global.archipelago.ending = global.archipelago.apclient_json_number_at(0, "ending")
     global.archipelago.shopDiscountPercentage = global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100
+    global.archipelago.updatePlayers()
   }
   case "ap_items_received" {
     global.rmml.log("items received")
@@ -624,7 +625,8 @@ match pollStatus {
       }
       ds_map_set(global.archipelago.scoutItems, string(location), {
         id: id,
-        type: type
+        type: type,
+        player: player
       })
       i += 1
       if (location == string(global.archipelago.maxLocation)) {

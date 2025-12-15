@@ -1,4 +1,4 @@
-match self.type {
+match self.item.type {
   case "archipelagoItem" { self.sprite_index = global.archipelago.archipelagoSprite }
   case "Grappling_Hook" { self.sprite_index = strinket_pickup }
   case "Charge_Jump" { self.sprite_index = strinket_pickup }

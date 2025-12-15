@@ -288,14 +288,14 @@ global.archipelago.playerNumber = -1
 global.archipelago.startId = 144000000
 global.archipelago.scoutLocation = global.archipelago.startId
 global.archipelago.maxLocation = global.archipelago.startId + 103
-
+global.archipelago.players = []
 global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 8, 8)
 
 global.archipelago.createItem = fun(x, y, depth, location) {
   let item = ds_map_find_value(global.archipelago.scoutItems, global.archipelago.getLocationId(location))
   instance_create_depth(x, y, depth, omod_instance, {
     location: location,
-    type: item.type,
+    item: item,
     mod: "archipelago"
   })
 }
@@ -474,11 +474,16 @@ global.archipelago.getItemType = fun(id) {
   }
 }
 
-global.archipelago.checkLocation = fun(location) {
+global.archipelago.checkLocation = fun(location, item) {
+  if !item {
+    item = ds_map_find_value(global.archipelago.scoutItems, global.archipelago.getLocationId(location))
+  }
   let locationId = global.archipelago.getLocationId(location)
   if (locationId != "") {
     global.archipelago.save.checkedLocations[location] = locationId
-    ds_queue_enqueue(global.archipelago.messageQueue, "Sent location: " + locationId)
+    if item.type == "archipelagoItem" {
+      ds_queue_enqueue(global.archipelago.messageQueue, "Sent item to " + global.archipelago.players[item.player])
+    }
     global.archipelago.saveArchipelagoData()
     global.rmml.log("Checked location with locationId: " + locationId)
     global.archipelago.apclient_location_checks("[" + locationId + "]")
@@ -489,6 +494,14 @@ global.archipelago.saveArchipelagoData = fun() {
   let archipelagoSaveFile = file_text_open_write("f_save_" + string(global.current_file) + ".archipelago.save")
   file_text_write_string(archipelagoSaveFile, json_stringify(global.archipelago.save))
   file_text_close(archipelagoSaveFile)
+}
+
+global.archipelago.updatePlayers = fun() {
+  let n = global.archipelago.apclient_get_player_number()
+  let i = 0
+  while 0 < n {
+    global.archipelago.players[i] = apclient_get_player_alias(i)
+  }
 }
 
 global.archipelago.shopTrinkets = [ds_map_find_value(global.description_map_, "t02"),ds_map_find_value(global.description_map_, "t03"),ds_map_find_value(global.description_map_, "t05"),ds_map_find_value(global.description_map_, "t09"),ds_map_find_value(global.description_map_, "t10"),ds_map_find_value(global.description_map_, "t15"),ds_map_find_value(global.description_map_, "t22"),ds_map_find_value(global.description_map_, "t24"),ds_map_find_value(global.description_map_, "t31")]
