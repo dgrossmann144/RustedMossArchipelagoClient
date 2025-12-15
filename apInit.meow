@@ -13,11 +13,10 @@
 -- [x] go back to teleporter button
 -- [x] sniper mana hacks
 -- [x] delete archipelago.save file when save file is deleted
-
+-- [x] fill player hp/mp when receiving a hp/mp/flag
 
 -- todo later
 -- titania piece spawning on you maybe causing problems?
--- fill player hp/mp when receiving a hp/mp/flag
 -- hard maya option
 -- death link send
 -- death link receive
