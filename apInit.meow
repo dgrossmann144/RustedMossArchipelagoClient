@@ -498,8 +498,9 @@ global.archipelago.saveArchipelagoData = fun() {
 global.archipelago.updatePlayers = fun() {
   let n = global.archipelago.apclient_get_player_number()
   let i = 0
-  while 0 < n {
-    global.archipelago.players[i] = apclient_get_player_alias(i)
+  while i < n {
+    global.archipelago.players[i] = global.archipelago.apclient_get_player_alias(i)
+    i += 1
   }
 }
 
