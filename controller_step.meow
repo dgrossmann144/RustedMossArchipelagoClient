@@ -536,9 +536,11 @@ if (player != noone) {
 }
 
 -- enable infinite use of sniper and grenades
-let minMp = min(global.archipelago.minMp, global.stat_max_mp)
-if (global.mp < minMp) {
-  global.mp = minMp
+if (global.archipelago.connectionState == "slotConnected") {
+  let minMp = min(global.archipelago.minMp, global.stat_max_mp)
+  if (global.mp < minMp) {
+    global.mp = minMp
+  }
 }
 
 
