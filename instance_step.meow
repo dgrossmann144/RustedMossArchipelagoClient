@@ -1,8 +1,11 @@
-match self.type {
-  case "archipelagoItem" {
-    if place_meeting(self.x, self.y, oplayer) {
-      global.archipelago.checkLocation(self.name)
-      instance_destroy(self)
+if (self.mod == "archipelago") {
+  if place_meeting(self.x, self.y, oplayer) {
+    global.archipelago.checkLocation(self.location, self.item)
+    instance_destroy(self)
+  }
+  match self.item.type {
+    case "Titania_Piece" {
+      self.image_index = global.stars_
     }
   }
 }

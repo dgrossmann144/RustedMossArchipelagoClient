@@ -1,5 +1,19 @@
-match self.type {
-  case "archipelagoItem" {
-    self.sprite_index = global.archipelago.archipelagoSprite
-  }
+match self.item.type {
+  case "archipelagoItem" { self.sprite_index = global.archipelago.archipelagoSprite }
+  case "Grappling_Hook" { self.sprite_index = strinket_pickup }
+  case "Charge_Jump" { self.sprite_index = strinket_pickup }
+  case "Grenade" { self.sprite_index = splayer_grenade_upgrade }
+  case "Titania_Piece" { self.sprite_index = sui_titania_pieces }
+  case "HP_UP" { self.sprite_index = shp_up }
+  case "MP_UP" { self.sprite_index = smp_up }
+  case "TP_UP" { self.sprite_index = strinket_point_pickup }
+  case "Fae_Silver" { self.sprite_index = sfae_silver }
+  case "Flag" { self.sprite_index = spickup_flag }
+  case "Pistol" { self.index = 5 }
+  case "Shotgun" { self.index = 1 }
+  case "Rocket_Launcher" { self.index = 4 }
+  case "Sniper" { self.index = 3 }
+  case "Bolt_Dispenser" { self.index = 2 }
+  case "Rifle" { self.index = 0 }
+  else { self.sprite_index = strinket_pickup }
 }
