@@ -353,27 +353,27 @@ global.archipelago.getLocationId = fun(location) {
     case "pickup_hp_rm_test_hidden_3"             { return "144000052" }
     case "pickup_hp_rm_test_before_boss_alt"      { return "144000053" }
     case "pickup_hp_rm_mount_4_half_right"        { return "144000054" }
-    case "pickup_hp_rm_forest_cafe_3"             { return "144000055" }
-    case "pickup_hp_rm_sea_extra_2"               { return "144000056" }
+    case "pickup_hp_rm_sea_extra_2"               { return "144000055" }
+    case "pickup_hp_rm_forest_cafe_3"             { return "144000056" }
     case "pickup_hp_rm_underhang_b20"             { return "144000057" }
-    case "pickup_mp_rm_lake_hidden_3"             { return "144000058" }
-    case "pickup_mp_rm_forest_extra_3"            { return "144000059" }
-    case "pickup_mp_rm_sea_left_2"                { return "144000060" }
-    case "pickup_mp_rm_catacombs_extra_1"         { return "144000061" }
+    case "pickup_mp_rm_test_alt_alt"              { return "144000058" }
+    case "pickup_mp_rm_4_hidden"                  { return "144000059" }
+    case "pickup_mp_rm_moss_hidden_1"             { return "144000060" }
+    case "pickup_mp_rm_mount_intro_begin"         { return "144000061" }
     case "pickup_mp_rm_sea_2"                     { return "144000062" }
-    case "pickup_mp_rm_moss_hidden_1"             { return "144000063" }
-    case "pickup_mp_rm_4_hidden"                  { return "144000064" }
-    case "pickup_mp_rm_mount_intro_begin"         { return "144000065" }
-    case "pickup_mp_rm_test_alt_alt"              { return "144000066" }
-    case "pickup_tp_rm_moss_8"                    { return "144000067" }
-    case "pickup_tp_rm_lake_hidden_4"             { return "144000068" }
-    case "pickup_tp_rm_forest_extra_0"            { return "144000069" }
-    case "pickup_tp_rm_hidden_4"                  { return "144000070" }
-    case "pickup_tp_rm_catacombs_extra_3"         { return "144000071" }
-    case "pickup_tp_rm_moss_3"                    { return "144000072" }
-    case "pickup_tp_rm_mount_10_alt"              { return "144000073" }
-    case "pickup_tp_rm_underhang_extra_2"         { return "144000074" }
-    case "pickup_tp_rm_moss_top_cave"             { return "144000075" }
+    case "pickup_mp_rm_sea_left_2"                { return "144000063" }
+    case "pickup_mp_rm_catacombs_extra_1"         { return "144000064" }
+    case "pickup_mp_rm_forest_extra_3"            { return "144000065" }
+    case "pickup_mp_rm_lake_hidden_3"             { return "144000066" }
+    case "pickup_tp_rm_hidden_4"                  { return "144000067" }
+    case "pickup_tp_rm_moss_top_cave"             { return "144000068" }
+    case "pickup_tp_rm_moss_3"                    { return "144000069" }
+    case "pickup_tp_rm_moss_8"                    { return "144000070" }
+    case "pickup_tp_rm_mount_10_alt"              { return "144000071" }
+    case "pickup_tp_rm_catacombs_extra_3"         { return "144000072" }
+    case "pickup_tp_rm_forest_extra_0"            { return "144000073" }
+    case "pickup_tp_rm_lake_hidden_4"             { return "144000074" }
+    case "pickup_tp_rm_underhang_extra_2"         { return "144000075" }
     case "pickup_dmg_rm_mount_3_alt_hidden"       { return "144000076" }
     case "pickup_dmg_rm_mount_right_4"            { return "144000077" }
     case "pickup_dmg_rm_sea_new_2_alt"            { return "144000078" }
@@ -391,17 +391,17 @@ global.archipelago.getLocationId = fun(location) {
     case "pickup_dmg_rfae_h4"                     { return "144000090" }
     case "pickup_dmg_rfae_h2"                     { return "144000091" }
     case "pickup_dmg_rm_underhang_extra_1"        { return "144000092" }
-    case "pickup_flag_rm_forest_to_rain"          { return "144000093" }
-    case "pickup_flag_rm_mount_4_half_right"      { return "144000094" }
-    case "pickup_flag_rm_catacombs_to_moss_2"     { return "144000095" }
-    case "pickup_flag_rm_moss_top_hidden_4"       { return "144000096" }
-    case "pickup_flag_rm_sea_mid_right_1"         { return "144000097" }
-    case "pickup_flag_rm_mount_shortcut"          { return "144000098" }
+    case "pickup_flag_rm_mount_shortcut"          { return "144000093" }
+    case "pickup_flag_rm_moss_top_hidden_4"       { return "144000094" }
+    case "pickup_flag_rm_mount_4_half_right"      { return "144000095" }
+    case "pickup_flag_rm_sea_mid_right_1"         { return "144000096" }
+    case "pickup_flag_rm_catacombs_to_moss_2"     { return "144000097" }
+    case "pickup_flag_rm_forest_to_rain"          { return "144000098" }
     case "pickup_weapon_rm_moss_top_cave"         { return "144000099" }
     case "pickup_weapon_rm_catacombs_right_extra" { return "144000100" }
-    case "pickup_weapon_rm_forest_extra_4"        { return "144000101" }
-    case "pickup_weapon_rm_lake_hidden_2"         { return "144000102" }
-    case "pickup_weapon_rm_mount_top_boss"        { return "144000103" }
+    case "pickup_weapon_rm_lake_hidden_2"         { return "144000101" }
+    case "pickup_weapon_rm_mount_top_boss"        { return "144000102" }
+    case "pickup_weapon_rm_forest_extra_4"        { return "144000103" }
     else                                          { return ""          }
   }
 }
