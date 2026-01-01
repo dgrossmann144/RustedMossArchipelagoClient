@@ -444,6 +444,7 @@ if (player != noone) {
         trinkets[i].found = 0
         i += 1
       }
+      global.archipelago.save.nextItemToProcess = 0
       global.archipelago.resync = false
     }
     while global.archipelago.save.nextItemToProcess < array_length(global.archipelago.save.receivedItems) {
@@ -599,17 +600,13 @@ match pollStatus {
     let index = global.archipelago.apclient_json_number_at(0, "index")
     let namesProxy = global.archipelago.apclient_json_proxy(0, "names")
 
-    if global.archipelago.save.lastReceivedIndex != 0 and index == 0 {
+    if index == 0 {
       global.archipelago.save.receivedItems = []
-      global.archipelago.save.lastReceivedIndex = 0
-      global.archipelago.save.nextItemToProcess = 0
-      global.archipelago.apclient_sync()
       global.archipelago.resync = true
-      return
     }
-    -- shouldn't happen
     else if index != global.archipelago.save.lastReceivedIndex {
       global.rmml.log(["New item not equal to last index", global.archipelago.save.lastReceivedIndex])
+      global.archipelago.apclient_sync()
       return
     }
 
