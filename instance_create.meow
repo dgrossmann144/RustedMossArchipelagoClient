@@ -9,11 +9,29 @@ match self.item.type {
   case "TP_UP" { self.sprite_index = strinket_point_pickup }
   case "Fae_Silver" { self.sprite_index = sfae_silver }
   case "Flag" { self.sprite_index = spickup_flag }
-  case "Pistol" { self.index = 5 }
-  case "Shotgun" { self.index = 1 }
-  case "Rocket_Launcher" { self.index = 4 }
-  case "Sniper" { self.index = 3 }
-  case "Bolt_Dispenser" { self.index = 2 }
-  case "Rifle" { self.index = 0 }
+  case "Pistol" { 
+    self.sprite_index = splayer_gun_pickup
+    self.index = 5
+  }
+  case "Shotgun" { 
+    self.index = 1
+    self.sprite_index = splayer_gun_pickup
+  }
+  case "Rocket_Launcher" { 
+    self.index = 4
+    self.sprite_index = splayer_gun_pickup
+  }
+  case "Sniper" { 
+    self.index = 3
+    self.sprite_index = splayer_gun_pickup
+  }
+  case "Bolt_Dispenser" { 
+    self.index = 2
+    self.sprite_index = splayer_gun_pickup
+  }
+  case "Rifle" { 
+    self.index = 0
+    self.sprite_index = splayer_gun_pickup
+  }
   else { self.sprite_index = strinket_pickup }
 }
