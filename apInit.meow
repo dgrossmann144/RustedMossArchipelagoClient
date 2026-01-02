@@ -247,7 +247,7 @@ global.archipelago.apclient_json_source = fun() {
 
 global.archipelago.apclient_init(2)
 global.archipelago.apclient_disconnect()
-global.archipelago.apclient_set_items_handling(3)
+global.archipelago.apclient_set_items_handling(7)
 global.archipelago.apclient_set_version(6, 4, 0)
 
 global.archipelago.menuState = 0
@@ -502,6 +502,22 @@ global.archipelago.updatePlayers = fun() {
     global.archipelago.players[i] = global.archipelago.apclient_get_player_alias(i)
     i += 1
   }
+}
+
+global.archipelago.receiveWeapon = fun(index) {
+  global.weapon_data[index].found = 1
+  let i = -1
+  while i < 5 {
+    i += 1
+    if i == index {
+      continue
+    }
+    if global.weapon_data[i].found {
+      return
+    }
+  }
+  global.current_weapon_ = index
+  global.previous_weapon = index
 }
 
 global.archipelago.shopTrinkets = [ds_map_find_value(global.description_map_, "t02"),ds_map_find_value(global.description_map_, "t03"),ds_map_find_value(global.description_map_, "t05"),ds_map_find_value(global.description_map_, "t09"),ds_map_find_value(global.description_map_, "t10"),ds_map_find_value(global.description_map_, "t15"),ds_map_find_value(global.description_map_, "t22"),ds_map_find_value(global.description_map_, "t24"),ds_map_find_value(global.description_map_, "t31")]

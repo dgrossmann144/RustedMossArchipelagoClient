@@ -432,11 +432,12 @@ if (player != noone) {
         case "TP_UP" { tpCount += 1 }
         case "Fae_Silver" { faeSilverCount += 1 }
         case "Flag" { flagCount += 1 }
-        case "Pistol" { global.weapon_data[5].found = 1 }
-        case "Shotgun" { global.weapon_data[1].found = 1 }
-        case "Rocket_Launcher" { global.weapon_data[4].found = 1 }
-        case "Sniper" { global.weapon_data[3].found = 1 }
-        case "Bolt_Dispenser" { global.weapon_data[2].found = 1 }
+        case "Rifle" { global.archipelago.receiveWeapon(0) }
+        case "Shotgun" { global.archipelago.receiveWeapon(1) }
+        case "Bolt_Dispenser" { global.archipelago.receiveWeapon(2) }
+        case "Sniper" { global.archipelago.receiveWeapon(3) }
+        case "Rocket_Launcher" { global.archipelago.receiveWeapon(4) }
+        case "Pistol" { global.archipelago.receiveWeapon(5) }
         -- todo make sure trinket receive works while in and out of shop menu
         case "Incendiary_Essence" { if (global.archipelago.shopState == 0) { global.trinket_data_[0].found = 1 } else { global.archipelago.tempTrinketData[0].found = 1} }
         case "Tattered_Blindfold" { if (global.archipelago.shopState == 0) { global.trinket_data_[1].found = 1 } else { global.archipelago.tempTrinketData[1].found = 1} }
