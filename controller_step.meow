@@ -162,10 +162,10 @@ if (game != noone) {
     global.archipelago.endingProcessed = true
   }
 
-  let roomName = room_get_name(room_get())
+  let room = room_get()
   let trinketPickup = instance_find(opickup_trinket, 0)
   -- move lilly trinket off screen every frame because the game crashes if we delete it
-  if (trinketPickup != noone and roomName == "rm_forest_lilly") {
+  if (trinketPickup != noone and room == rm_forest_lilly) {
     trinketPickup.x = -50
     trinketPickup.y = -50
   }
@@ -185,47 +185,47 @@ if (game != noone) {
 
   -- handle creating npc trinket and boss titania piece locations
   if (!archipelagoInstanceExists) {
-    if (story_flag_triggered("face_delivered") and roomName == "rm_sea_8_alt") {
+    if (story_flag_triggered("face_delivered") and room == rm_sea_8_alt) {
       global.archipelago.createItem(180, 150, 0, "pickup_trinket_rm_sea_8_alt")
-    } else if (story_flag_triggered("lilly_triggered") and roomName == "rm_forest_lilly") {
+    } else if (story_flag_triggered("lilly_triggered") and room == rm_forest_lilly) {
       global.archipelago.createItem(184, 176, 0, "pickup_trinket_rm_forest_lilly")
-    } else if (story_flag_triggered("nell_meet_third") and roomName == "rm_lake_extra_6") {
+    } else if (story_flag_triggered("nell_meet_third") and room == rm_lake_extra_6) {
       global.archipelago.createItem(80, 160, 0, "pickup_trinket_rm_lake_extra_6")
-    } else if (story_flag_triggered("eli_meet_third") and roomName == "rm_lab_red_alt") {
+    } else if (story_flag_triggered("eli_meet_third") and room == rm_lab_red_alt) {
       global.archipelago.createItem(552, 360, 0, "pickup_trinket_rm_lab_red_alt")
-    } else if (ds_map_exists(global.save_data, "boss_book") and roomName == "rm_test_boss") {
+    } else if (ds_map_exists(global.save_data, "boss_book") and room == rm_test_boss) {
       global.archipelago.createItem(400, 184, 0, "pickup_star_rm_test_boss")
-    } else if (ds_map_exists(global.save_data, "boss_sword") and roomName == "rm_mount_boss") {
+    } else if (ds_map_exists(global.save_data, "boss_sword") and room == rm_mount_boss) {
       global.archipelago.createItem(488, 204, 0, "pickup_star_rm_mount_boss")
-    } else if (ds_map_exists(global.save_data, "boss_angel") and roomName == "rm_sea_boss") {
+    } else if (ds_map_exists(global.save_data, "boss_angel") and room == rm_sea_boss) {
       global.archipelago.createItem(448, 455, 0, "pickup_star_rm_sea_boss")
-    } else if (ds_map_exists(global.save_data, "boss_tar_beaten") and roomName == "rm_catacombs_boss") {
+    } else if (ds_map_exists(global.save_data, "boss_tar_beaten") and room == rm_catacombs_boss) {
       global.archipelago.createItem(960, 400, 0, "pickup_star_rm_catacombs_boss")
-    } else if (ds_map_exists(global.save_data, "boss_worm") and roomName == "rm_lake_boss") {
+    } else if (ds_map_exists(global.save_data, "boss_worm") and room == rm_lake_boss) {
       global.archipelago.createItem(575, 219, 0, "pickup_star_rm_lake_boss")
-    } else if (story_flag_triggered("maya_forest_win") and roomName == "rm_forest_boss") {
+    } else if (story_flag_triggered("maya_forest_win") and room == rm_forest_boss) {
       global.archipelago.createItem(312, 280, 0, "pickup_star_rm_forest_boss")
-    } else if (story_flag_triggered("spirella_defeated") and roomName == "rm_lab_boss") {
+    } else if (story_flag_triggered("spirella_defeated") and room == rm_lab_boss) {
       global.archipelago.createItem(442, 204, 0, "pickup_star_rm_lab_boss")
     }
   }
 
   -- reset maya_win story flag in rooms before maya 1 fight, or set it in the rooms before maya 2 fight if player has beat maya
-  if (roomName == "rm_moss_top_save" or roomName == "rm_moss_top_hidden_1") {
+  if (room == "rm_moss_top_save" or room == rm_moss_top_hidden_1) {
     story_flag_set("maya_win", false)
-  } else if (roomName == "rm_forest_core_6" or roomName == "rm_forest_boss_after") {
+  } else if (room == "rm_forest_core_6" or room == rm_forest_boss_after) {
     if (global.archipelago.save.beatMaya) {
       story_flag_set("maya_win", true)
     }
   }
 
   -- reset titania head in room before the head room
-  if (roomName == "rm_forest_core_0") {
+  if (room == rm_forest_core_0) {
     story_flag_set("titania_head_activated", false)
   }
 
   -- reset the rescue cutscene to avoid the thanks for playing the demo screen
-  if (roomName == "rm_moss_top_boss") {
+  if (room == rm_moss_top_boss) {
     story_flag_set("nell_rescue", false)
   }
 }
