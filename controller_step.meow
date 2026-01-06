@@ -432,7 +432,7 @@ if (player != noone) {
         case "TP_UP" { tpCount += 1 }
         case "Fae_Silver" { faeSilverCount += 1 }
         case "Flag" { flagCount += 1 }
-        case "Rifle" { global.archipelago.receiveWeapon(0) }
+        case "Rail" { global.archipelago.receiveWeapon(0) }
         case "Shotgun" { global.archipelago.receiveWeapon(1) }
         case "Bolt_Dispenser" { global.archipelago.receiveWeapon(2) }
         case "Sniper" { global.archipelago.receiveWeapon(3) }

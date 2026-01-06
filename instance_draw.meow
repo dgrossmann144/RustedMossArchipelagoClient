@@ -18,7 +18,7 @@ match self.item.type {
   case "Bolt_Dispenser" { 
     scr_draw_weapon_pickup(self.index)
   }
-  case "Rifle" { 
+  case "Rail" { 
     scr_draw_weapon_pickup(self.index)
   }
   else {

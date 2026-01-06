@@ -444,7 +444,7 @@ global.archipelago.getShopName = fun(location) {
     case 144000049 { return ["Rocket Launcher", ""] }
     case 144000050 { return ["Sniper", ""] }
     case 144000051 { return ["Bolt Dispenser", ""] }
-    case 144000052 { return ["Rifle", ""] }
+    case 144000052 { return ["Rail", ""] }
     case 144000053 { return ["22 Munny", "Deal of the Century!"] }
     else { return ["Nothing", "What even is this? You shouldn't buy it just to be safe."] }
   }
@@ -467,7 +467,7 @@ global.archipelago.getItemType = fun(id) {
     case 144000049 { return "Rocket_Launcher" }
     case 144000050 { return "Sniper" }
     case 144000051 { return "Bolt_Dispenser" }
-    case 144000052 { return "Rifle" }
+    case 144000052 { return "Rail" }
     case 144000053 { return "Chest" }
     else           { return "" }
   }

@@ -14,6 +14,6 @@ match self.item.type {
   case "Rocket_Launcher" { self.index = 4 }
   case "Sniper" { self.index = 3 }
   case "Bolt_Dispenser" { self.index = 2 }
-  case "Rifle" { self.index = 0 }
+  case "Rail" { self.index = 0 }
   else { self.sprite_index = strinket_pickup }
 }
