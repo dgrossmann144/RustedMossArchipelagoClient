@@ -5,7 +5,7 @@ if (self.mod == "archipelago") {
   }
   match self.item.type {
     case "Titania_Piece" {
-      self.image_index = global.stars_
+      self.image_index = global.archipelago.save.starsCache
     }
   }
 }
