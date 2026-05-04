@@ -12,13 +12,17 @@ if (menu != noone) {
       slotName: "Fern",
       slotPassword: "",
       receivedItems: [],
+      lastReceivedIndex: 0,
+      nextItemToProcess: 0,
       checkedLocations: {},
       beatMaya: false
+      starsCache: 0,
+      grappleEnabled: false,
+      grappleUpgradeEnabled: false,
+      infiniteGrappleEnabled: false,
+      chargeJumpEnabled: false
     }
     global.archipelago.processItems = false
-    global.archipelago.grappleUpgradeEnabled = false
-    global.archipelago.infiniteGrappleEnabled = false
-    global.archipelago.chargeJumpEnabled = false
     global.archipelago.menuDeath = false
     global.archipelago.shopState = 0
     global.archipelago.tempTrinketData = []
@@ -125,7 +129,6 @@ if (game != noone) {
         global.archipelago.lastDeathLink = global.archipelago.apclient_get_server_time()
       }
       global.archipelago.menuDeath = false
-      global.archipelago.processItems = true
     }
   -- ending a gamestate
   } else if (global.gamestate == 32 and !global.archipelago.endingProcessed) {
@@ -159,10 +162,10 @@ if (game != noone) {
     global.archipelago.endingProcessed = true
   }
 
-  let roomName = room_get_name(room_get())
+  let room = room_get()
   let trinketPickup = instance_find(opickup_trinket, 0)
   -- move lilly trinket off screen every frame because the game crashes if we delete it
-  if (trinketPickup != noone and roomName == "rm_forest_lilly") {
+  if (trinketPickup != noone and room == rm_forest_lilly) {
     trinketPickup.x = -50
     trinketPickup.y = -50
   }
@@ -182,47 +185,47 @@ if (game != noone) {
 
   -- handle creating npc trinket and boss titania piece locations
   if (!archipelagoInstanceExists) {
-    if (story_flag_triggered("face_delivered") and roomName == "rm_sea_8_alt" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_sea_8_alt")) {
+    if (story_flag_triggered("face_delivered") and room == rm_sea_8_alt) {
       global.archipelago.createItem(180, 150, 0, "pickup_trinket_rm_sea_8_alt")
-    } else if (story_flag_triggered("lilly_triggered") and roomName == "rm_forest_lilly" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_forest_lilly")) {
+    } else if (story_flag_triggered("lilly_triggered") and room == rm_forest_lilly) {
       global.archipelago.createItem(184, 176, 0, "pickup_trinket_rm_forest_lilly")
-    } else if (story_flag_triggered("nell_meet_third") and roomName == "rm_lake_extra_6" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_lake_extra_6")) {
+    } else if (story_flag_triggered("nell_meet_third") and room == rm_lake_extra_6) {
       global.archipelago.createItem(80, 160, 0, "pickup_trinket_rm_lake_extra_6")
-    } else if (story_flag_triggered("eli_meet_third") and roomName == "rm_lab_red_alt" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_trinket_rm_lab_red_alt")) {
+    } else if (story_flag_triggered("eli_meet_third") and room == rm_lab_red_alt) {
       global.archipelago.createItem(552, 360, 0, "pickup_trinket_rm_lab_red_alt")
-    } else if (ds_map_exists(global.save_data, "boss_book") and roomName == "rm_test_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_test_boss")) {
+    } else if (ds_map_exists(global.save_data, "boss_book") and room == rm_test_boss) {
       global.archipelago.createItem(400, 184, 0, "pickup_star_rm_test_boss")
-    } else if (ds_map_exists(global.save_data, "boss_sword") and roomName == "rm_mount_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_mount_boss")) {
+    } else if (ds_map_exists(global.save_data, "boss_sword") and room == rm_mount_boss) {
       global.archipelago.createItem(488, 204, 0, "pickup_star_rm_mount_boss")
-    } else if (ds_map_exists(global.save_data, "boss_angel") and roomName == "rm_sea_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_sea_boss")) {
+    } else if (ds_map_exists(global.save_data, "boss_angel") and room == rm_sea_boss) {
       global.archipelago.createItem(448, 455, 0, "pickup_star_rm_sea_boss")
-    } else if (ds_map_exists(global.save_data, "boss_tar_beaten") and roomName == "rm_catacombs_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_catacombs_boss")) {
+    } else if (ds_map_exists(global.save_data, "boss_tar_beaten") and room == rm_catacombs_boss) {
       global.archipelago.createItem(960, 400, 0, "pickup_star_rm_catacombs_boss")
-    } else if (ds_map_exists(global.save_data, "boss_worm") and roomName == "rm_lake_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_lake_boss")) {
+    } else if (ds_map_exists(global.save_data, "boss_worm") and room == rm_lake_boss) {
       global.archipelago.createItem(575, 219, 0, "pickup_star_rm_lake_boss")
-    } else if (story_flag_triggered("maya_forest_win") and roomName == "rm_forest_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_forest_boss")) {
+    } else if (story_flag_triggered("maya_forest_win") and room == rm_forest_boss) {
       global.archipelago.createItem(312, 280, 0, "pickup_star_rm_forest_boss")
-    } else if (story_flag_triggered("spirella_defeated") and roomName == "rm_lab_boss" and !variable_struct_exists(global.archipelago.save.checkedLocations, "pickup_star_rm_lab_boss")) {
+    } else if (story_flag_triggered("spirella_defeated") and room == rm_lab_boss) {
       global.archipelago.createItem(442, 204, 0, "pickup_star_rm_lab_boss")
     }
   }
 
   -- reset maya_win story flag in rooms before maya 1 fight, or set it in the rooms before maya 2 fight if player has beat maya
-  if (roomName == "rm_moss_top_save" or roomName == "rm_moss_top_hidden_1") {
+  if (room == "rm_moss_top_save" or room == rm_moss_top_hidden_1) {
     story_flag_set("maya_win", false)
-  } else if (roomName == "rm_forest_core_6" or roomName == "rm_forest_boss_after") {
+  } else if (room == "rm_forest_core_6" or room == rm_forest_boss_after) {
     if (global.archipelago.save.beatMaya) {
       story_flag_set("maya_win", true)
     }
   }
 
   -- reset titania head in room before the head room
-  if (roomName == "rm_forest_core_0") {
+  if (room == rm_forest_core_0) {
     story_flag_set("titania_head_activated", false)
   }
 
   -- reset the rescue cutscene to avoid the thanks for playing the demo screen
-  if (roomName == "rm_moss_top_boss") {
+  if (room == rm_moss_top_boss) {
     story_flag_set("nell_rescue", false)
   }
 }
@@ -242,21 +245,24 @@ if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Titania_P
 if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Charge_Jump")) {
   let seer = instance_find(oseer, 0)
   if (seer != noone) {
-    if (seer.state == 4 and seer.seer_index == 3) {
+    -- frame after receiving charge jump
+    if (seer.state == 4 and seer.seer_index == 4) {
+      if !global.archipelago.save.chargeJumpEnabled {
+        global.charge_jump = false
+      }
       global.archipelago.checkLocation("Charge_Jump")
     }
   }
 }
 
-if (!array_contains(global.archipelago.save.receivedItems, "Charge_Jump")) {
-  -- disables charge jump
-  global.jump_charge__ = 0
-}
-
 if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Grappling_Hook")) {
   let mechBoss = instance_find(oboss_mech, 0)
   if (mechBoss != noone) {
-    if (mechBoss.state == 11 and mechBoss.dead_state == 3) {
+    -- frame after receiving grappling hook
+    if (mechBoss.state == 11 and mechBoss.dead_state == 3 and mechBoss.dead_timer == 2) {
+      if !global.archipelago.save.grappleEnabled {
+        global.HOOK_UNLOCKED_ = false
+      }
       global.archipelago.checkLocation("Grappling_Hook")
     }
   }
@@ -265,7 +271,11 @@ if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Grappling
 if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Grappling_Hook_Upgrade")) {
   let hookUpgradeStatue = instance_find(ohook_upgrade_statue, 0)
   if (hookUpgradeStatue != noone) {
-    if (hookUpgradeStatue.state == 4) {
+    -- frame after receiving grappling hook upgrade
+    if (hookUpgradeStatue.state == 5) {
+      if !global.archipelago.save.grappleUpgradeEnabled {
+        global.HOOK_UPGRADE_0_ = false
+      }
       global.archipelago.checkLocation("Grappling_Hook_Upgrade")
     }
   }
@@ -381,27 +391,17 @@ if (shop != noone) {
   }
 }
 
-let hook = instance_find(ohook, 0)
-if (hook != noone and !global.archipelago.grappleUpgradeEnabled) {
-  -- disables hook pull
-  hook.pulled = true
-}
-
 let player = instance_find(oplayer, 0)
 if (player != noone) {
-  if (!array_contains(global.archipelago.save.receivedItems, "Grappling_Hook")) {
-    -- disables grappling hook
-    player.can_hook_delay = 15
-  } else {
-    global.HOOK_UNLOCKED_ = true
-  }
-
-  if (!global.archipelago.infiniteGrappleEnabled) {
-    player.endless_hook = false
-  } else {
+  if (global.archipelago.save.infiniteGrappleEnabled) {
     player.endless_hook = true
+  } else {
+    player.endless_hook = false
   }
-
+  -- enable infinite use of sniper and grenades
+  if global.mp < global.archipelago.minMp {
+      global.mp = global.archipelago.minMp
+  }
   -- seems like the "default" player states when we would want to do deathlink I think
   if (player.state == 6 or player.state == 0) {
     if (global.archipelago.processDeathlink) {
@@ -413,25 +413,84 @@ if (player != noone) {
   }
 
   if (global.archipelago.processItems) {
-    let grappleCount = 0
-    let hpCount = 0
-    let mpCount = 0
-    let tpCount = 0
-    let faeSilverCount = 0
-    let flagCount = 0
-    let titaniaPieceCount = 0
-    let i = 0
-    while (i < array_length(global.archipelago.save.receivedItems)) {
-      match global.archipelago.save.receivedItems[i] {
-        case "Grappling_Hook" { grappleCount += 1 }
-        case "Charge_Jump" { global.charge_jump = true }
+    if (global.archipelago.resync) {
+      global.archipelago.save.grappleEnabled = false
+      global.HOOK_UNLOCKED_ = false
+      global.archipelago.save.grappleUpgradeEnabled = false
+      global.HOOK_UPGRADE_0_ = false
+      global.archipelago.save.infiniteGrappleEnabled = false
+      global.archipelago.save.chargeJumpEnabled = false
+      global.charge_jump = false
+      global.HOOK_UPGRADE_2_ = false
+      global.archipelago.save.starsCache = 0
+      global.stars_ = 0
+      story_flag_set("titania_head_activated", false)
+      global.stat_max_hp = 7
+      global.stat_max_mp = 21
+      global.max_trinkets_points_ = 10
+      global.metal_found_ = 0
+      ds_map_set(global.save_data, "flags_found", 0)
+      let i = 1
+      while i < 6 {
+        global.weapon_data[5].found = 0
+        i += 1
+      }
+      let trinkets = global.trinket_data_
+      if global.archipelago.shopState == 1 {
+        trinkets = global.archipelago.tempTrinketData
+      }
+      i = 0
+      while i < 34 {
+        trinkets[i].found = 0
+        i += 1
+      }
+      global.archipelago.save.nextItemToProcess = 0
+      global.archipelago.resync = false
+    }
+    while global.archipelago.save.nextItemToProcess < array_length(global.archipelago.save.receivedItems) {
+      match global.archipelago.save.receivedItems[global.archipelago.save.nextItemToProcess] {
+        case "Grappling_Hook" {
+          if !global.archipelago.save.grappleEnabled {
+            global.archipelago.save.grappleEnabled = true
+            global.HOOK_UNLOCKED_ = true
+          } else if !global.archipelago.save.grappleUpgradeEnabled {
+            global.archipelago.save.grappleUpgradeEnabled = true
+            global.HOOK_UPGRADE_0_ = true
+          } else {
+            global.archipelago.save.infiniteGrappleEnabled = true
+          }
+        }
+        case "Charge_Jump" {
+          global.archipelago.save.chargeJumpEnabled = true
+          global.charge_jump = true
+        }
         case "Grenade" { global.HOOK_UPGRADE_2_ = true }
-        case "Titania_Piece" { titaniaPieceCount += 1 }
-        case "HP_UP" { hpCount += 1 }
-        case "MP_UP" { mpCount += 1 }
-        case "TP_UP" { tpCount += 1 }
-        case "Fae_Silver" { faeSilverCount += 1 }
-        case "Flag" { flagCount += 1 }
+        case "Titania_Piece" { 
+          global.archipelago.save.starsCache += 1
+          if (global.archipelago.save.starsCache == 8) {
+            story_flag_set("titania_head_activated", true)
+          }
+          global.stars_ = min(global.archipelago.save.starsCache, 7)
+        }
+        case "HP_UP" { 
+          global.stat_max_hp += 1
+          global.hp = global.stat_max_hp
+        }
+        case "MP_UP" { 
+          global.stat_max_mp += 2
+          global.mp = global.stat_max_mp
+        }
+        case "TP_UP" { 
+          global.max_trinkets_points_ += 2
+          global.hp = global.stat_max_hp
+        }
+        case "Fae_Silver" { global.metal_found_ += 1 }
+        case "Flag" { 
+          let flags = map_return_safe("flags_found", 0)
+          ds_map_set(global.save_data, "flags_found", val + 1)
+          global.stat_max_mp += 3
+          global.mp = global.stat_max_mp
+        }
         case "Rail" { global.archipelago.receiveWeapon(0) }
         case "Shotgun" { global.archipelago.receiveWeapon(1) }
         case "Bolt_Dispenser" { global.archipelago.receiveWeapon(2) }
@@ -474,58 +533,9 @@ if (player != noone) {
         case "Titanias_Protection" { if (global.archipelago.shopState == 0) { global.trinket_data_[32].found = 1 } else { global.archipelago.tempTrinketData[32].found = 1} }
         case "Energy_Disruptor" { if (global.archipelago.shopState == 0) { global.trinket_data_[33].found = 1 } else { global.archipelago.tempTrinketData[33].found = 1} }
       }
-
-      i += 1
+      global.archipelago.save.nextItemToProcess += 1
     }
-    let old_hp = global.stat_max_hp
-    global.stat_max_hp = 7 + hpCount
-    if global.stat_max_hp > old_hp {
-      global.hp = global.stat_max_hp
-    }
-    let old_mp = global.stat_max_mp
-    global.stat_max_mp = 21 + (2 * mpCount) + (3 * flagCount)
-    if global.stat_max_mp > old_mp {
-      global.mp = global.stat_max_mp
-    }
-    -- set flags_found to enable juni's climb
-    ds_map_set(global.save_data, "flags_found", flagCount)
-    global.max_trinkets_points_ = 10 + (2 * tpCount)
-    global.metal_found_ = faeSilverCount
-    if (titaniaPieceCount >= 8) {
-      story_flag_set("titania_head_activated", true)
-      titaniaPieceCount = 7
-    } else {
-      story_flag_set("titania_head_activated", false)
-    }
-    let roomName = room_get_name(room_get())
-    if (roomName == "rm_forest_boss") {
-      if (global.archipelago.hardMaya) {
-        global.stars_ = 0
-      } else {
-        global.stars_ = 1
-      }
-    } else {
-      global.stars_ = titaniaPieceCount
-    }
-
-    if (grappleCount >= 2) {
-      global.archipelago.grappleUpgradeEnabled = true
-      global.HOOK_UPGRADE_0_ = true
-    }
-
-    if (grappleCount >= 3) {
-      global.archipelago.infiniteGrappleEnabled = true
-    }
-
     global.archipelago.processItems = false
-  }
-}
-
--- enable infinite use of sniper and grenades
-if (global.archipelago.connectionState == "slotConnected") {
-  let minMp = min(global.archipelago.minMp, global.stat_max_mp)
-  if (global.mp < minMp) {
-    global.mp = minMp
   }
 }
 
@@ -590,16 +600,26 @@ match pollStatus {
     let numItems = global.archipelago.apclient_json_number_at(0, "len")
     let index = global.archipelago.apclient_json_number_at(0, "index")
     let namesProxy = global.archipelago.apclient_json_proxy(0, "names")
+
+    if index == 0 {
+      global.archipelago.save.receivedItems = []
+      global.archipelago.resync = true
+    }
+    else if index != global.archipelago.save.lastReceivedIndex {
+      global.rmml.log(["New item not equal to last index", global.archipelago.save.lastReceivedIndex])
+      global.archipelago.apclient_sync()
+      return
+    }
+
     let i = 0
     while (i < numItems) {
       let itemName = global.archipelago.apclient_json_string_at(namesProxy, string(i))
-      if (i + index == array_length(global.archipelago.save.receivedItems)) {
-        array_push(global.archipelago.save.receivedItems, itemName)
-        ds_queue_enqueue(global.archipelago.messageQueue, "Received item: " + itemName)
-        global.archipelago.processItems = true
-      }
+      array_push(global.archipelago.save.receivedItems, itemName)
+      ds_queue_enqueue(global.archipelago.messageQueue, "Received item: " + itemName)
       i += 1
     }
+    global.archipelago.processItems = true
+    global.archipelago.save.lastReceivedIndex = index + numItems
     global.archipelago.saveArchipelagoData()
   }
   case "ap_bounced" {
@@ -620,7 +640,7 @@ match pollStatus {
   case "ap_location_info" {
     let numItems = global.archipelago.apclient_json_number_at(0, "len")
     let items = global.archipelago.apclient_json_proxy(0, "items")
-    let flags = global.archipelago.apclient_json_proxy(0, "flags")
+    --let flags = global.archipelago.apclient_json_proxy(0, "flags")
     let players = global.archipelago.apclient_json_proxy(0, "players")
     let locations = global.archipelago.apclient_json_proxy(0, "locations")
     
@@ -628,7 +648,7 @@ match pollStatus {
     while (i < numItems) {
       let player = global.archipelago.apclient_json_number_at(players, string(i))
       let location = global.archipelago.apclient_json_number_at(locations, string(i))
-      let flag = global.archipelago.apclient_json_number_at(flags, string(i))
+      --let flag = global.archipelago.apclient_json_number_at(flags, string(i))
       let id = global.archipelago.apclient_json_number_at(items, string(i))
       let type = ""
       if (player == global.archipelago.playerNumber) {

@@ -258,13 +258,17 @@ global.archipelago.save = {
   slotName: "Fern",
   slotPassword: "",
   receivedItems: [],
+  lastReceivedIndex: 0,
+  nextItemToProcess: 0,
   checkedLocations: {},
   beatMaya: false
+  starsCache: 0,
+  grappleEnabled: false,
+  grappleUpgradeEnabled: false,
+  infiniteGrappleEnabled: false,
+  chargeJumpEnabled: false
 }
 global.archipelago.processItems = false
-global.archipelago.grappleUpgradeEnabled = false
-global.archipelago.infiniteGrappleEnabled = false
-global.archipelago.chargeJumpEnabled = false
 global.archipelago.menuDeath = false
 global.archipelago.shopState = 0
 global.archipelago.tempTrinketData = []
@@ -291,6 +295,9 @@ global.archipelago.players = []
 global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 8, 8)
 
 global.archipelago.createItem = fun(x, y, depth, location) {
+  if variable_struct_exists(global.archipelago.save.checkedLocations, location) {
+    return
+  }
   let item = ds_map_find_value(global.archipelago.scoutItems, global.archipelago.getLocationId(location))
   instance_create_depth(x, y, depth, omod_instance, {
     location: location,
