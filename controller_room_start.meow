@@ -46,6 +46,12 @@ if global.archipelago.hard_maya and room == rm_forest_boss {
 }
 
 match room {
+  case rm_start_0 {
+    -- first spawn
+    if instance_exists(ospawn_point) and global.gamestate != 29 and !global.spayer_spawned {
+      global.weapon_data[0].found = 0
+    }
+  }
   case rm_snow_intro_1 {
     global.archipelago.createItem(192, 400, 0, "Grenade")
   }

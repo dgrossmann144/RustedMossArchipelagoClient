@@ -29,7 +29,7 @@ match self.item.type {
     self.index = 2
     self.sprite_index = splayer_gun_pickup
   }
-  case "Rifle" { 
+  case "Rail" { 
     self.index = 0
     self.sprite_index = splayer_gun_pickup
   }
