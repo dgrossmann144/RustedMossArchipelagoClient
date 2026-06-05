@@ -291,7 +291,6 @@ global.archipelago.playerNumber = -1
 global.archipelago.startId = 144000000
 global.archipelago.scoutLocation = global.archipelago.startId
 global.archipelago.maxLocation = global.archipelago.startId + 103
-global.archipelago.players = []
 global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 8, 8)
 
 global.archipelago.createItem = fun(x, y, depth, location) {
@@ -415,8 +414,8 @@ global.archipelago.getLocationId = fun(location) {
 
 global.archipelago.getShopName = fun(location) {
   let item = ds_map_find_value(global.archipelago.scoutItems, global.archipelago.getLocationId(location))
-  if (item.type == "archipelagoItem") {
-    return ["Archipelago Item", "Who knows where this came from."]
+  if (item.player != global.archipelago.playerNumber) {
+    return [item.name, "A fae must have stolen it from " + global.archipelago.apclient_get_player_alias(item.player) + " in " + item.game]
   }
   if (item.id <= 144000037) {
     if (item.id == 144000002) { return global.archipelago.shopTrinkets[0]}
@@ -457,29 +456,6 @@ global.archipelago.getShopName = fun(location) {
   }
 }
 
-global.archipelago.getItemType = fun(id) {
-  if (id <= 144000037) { return "Trinket" }
-  match id {
-    case 144000038 { return "Grappling_Hook" }
-    case 144000039 { return "Charge_Jump" }
-    case 144000040 { return "Grenade" }
-    case 144000041 { return "Titania_Piece" }
-    case 144000042 { return "HP_UP" }
-    case 144000043 { return "MP_UP" }
-    case 144000044 { return "TP_UP" }
-    case 144000045 { return "Fae_Silver" }
-    case 144000046 { return "Flag" }
-    case 144000047 { return "Pistol" }
-    case 144000048 { return "Shotgun" }
-    case 144000049 { return "Rocket_Launcher" }
-    case 144000050 { return "Sniper" }
-    case 144000051 { return "Bolt_Dispenser" }
-    case 144000052 { return "Rail" }
-    case 144000053 { return "Chest" }
-    else           { return "" }
-  }
-}
-
 global.archipelago.checkLocation = fun(location, item) {
   if !item {
     item = ds_map_find_value(global.archipelago.scoutItems, global.archipelago.getLocationId(location))
@@ -487,8 +463,8 @@ global.archipelago.checkLocation = fun(location, item) {
   let locationId = global.archipelago.getLocationId(location)
   if (locationId != "") {
     global.archipelago.save.checkedLocations[location] = locationId
-    if item.type == "archipelagoItem" {
-      ds_queue_enqueue(global.archipelago.messageQueue, "Sent item to " + global.archipelago.players[item.player])
+    if item.player != global.archipelago.playerNumber {
+      ds_queue_enqueue(global.archipelago.messageQueue, "Sent " + item.name + " to " + global.archipelago.apclient_get_player_alias(item.player))
     }
     global.archipelago.saveArchipelagoData()
     global.rmml.log("Checked location with locationId: " + locationId)
@@ -500,15 +476,6 @@ global.archipelago.saveArchipelagoData = fun() {
   let archipelagoSaveFile = file_text_open_write("f_save_" + string(global.current_file) + ".archipelago.save")
   file_text_write_string(archipelagoSaveFile, json_stringify(global.archipelago.save))
   file_text_close(archipelagoSaveFile)
-}
-
-global.archipelago.updatePlayers = fun() {
-  let n = global.archipelago.apclient_get_player_number()
-  let i = 0
-  while i < n {
-    global.archipelago.players[i] = global.archipelago.apclient_get_player_alias(i)
-    i += 1
-  }
 }
 
 global.archipelago.receiveWeapon = fun(index) {

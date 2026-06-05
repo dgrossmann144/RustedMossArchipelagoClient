@@ -591,7 +591,6 @@ match pollStatus {
     global.archipelago.ending = global.archipelago.apclient_json_number_at(0, "ending")
     global.archipelago.shopDiscountPercentage = global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100
     global.archipelago.minMp = global.archipelago.apclient_json_number_at(0, "min_mp")
-    global.archipelago.updatePlayers()
   }
   case "ap_items_received" {
     global.rmml.log("items received")
@@ -650,17 +649,12 @@ match pollStatus {
       let location = global.archipelago.apclient_json_number_at(locations, string(i))
       --let flag = global.archipelago.apclient_json_number_at(flags, string(i))
       let id = global.archipelago.apclient_json_number_at(items, string(i))
-      let type = ""
-      if (player == global.archipelago.playerNumber) {
-        type = global.archipelago.getItemType(id)
-      }
-      else {
-        type = "archipelagoItem"
-      }
+      let game = global.archipelago.apclient_get_player_game(player)
       ds_map_set(global.archipelago.scoutItems, string(location), {
         id: id,
-        type: type,
-        player: player
+        player: player,
+        game: game,
+        name: global.archipelago.apclient_get_item_name(id, game)
       })
       i += 1
       if (location == string(global.archipelago.maxLocation)) {
