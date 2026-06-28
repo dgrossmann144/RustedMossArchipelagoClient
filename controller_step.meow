@@ -486,8 +486,7 @@ if (player != noone) {
         }
         case "Fae_Silver" { global.metal_found_ += 1 }
         case "Flag" { 
-          let flags = map_return_safe("flags_found", 0)
-          ds_map_set(global.save_data, "flags_found", val + 1)
+          ds_map_set(global.save_data, "flags_found", map_return_safe("flags_found", 0) + 1)
           global.stat_max_mp += 3
           global.mp = global.stat_max_mp
         }
