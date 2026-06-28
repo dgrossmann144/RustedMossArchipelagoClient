@@ -293,6 +293,7 @@ global.archipelago.scoutLocation = global.archipelago.startId
 global.archipelago.maxLocation = global.archipelago.startId + 103
 global.archipelago.players = []
 global.archipelago.archipelagoSprite = sprite_add("mods/rmml/archipelago/archipelago.png", 1, false, false, 8, 8)
+global.archipelago.mpRegen = false
 
 global.archipelago.createItem = fun(x, y, depth, location) {
   if variable_struct_exists(global.archipelago.save.checkedLocations, location) {

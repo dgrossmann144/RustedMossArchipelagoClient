@@ -30,7 +30,6 @@ if (menu != noone) {
     global.archipelago.deathLink = 0
     global.archipelago.ending = 0
     global.archipelago.shopDiscountPercentage = 1
-    global.archipelago.minMp = 5
     ds_queue_clear(global.archipelago.messageQueue)
     global.archipelago.messageDuration = 0
     global.archipelago.message = ""
@@ -119,6 +118,9 @@ if (game != noone) {
       global.start_room_y = 32
       save_game()
       global.gamestate = 9
+    }
+    if keyboard_check_pressed(vk_f6) {
+      global.archipelago.mpRegen = !global.archipelago.mpRegen
     }
   -- death gamestate
   } else if (global.gamestate == 9) {
@@ -399,8 +401,8 @@ if (player != noone) {
     player.endless_hook = false
   }
   -- enable infinite use of sniper and grenades
-  if global.mp < global.archipelago.minMp {
-      global.mp = global.archipelago.minMp
+  if global.archipelago.mpRegen and global.mp < 5 {
+      global.mp = 5
   }
   -- seems like the "default" player states when we would want to do deathlink I think
   if (player.state == 6 or player.state == 0) {

@@ -1,15 +1,14 @@
 -- pause gamestate draw f5 to teleport indicator
 let game = instance_find(ogame, 0)
 if (global.gamestate == 2 and game != noone) {
-  let xx = global.game_width * 0.06 + 4
-  let yy = global.game_height * 0.1 + 8
+  let xx = global.game_width * 0.45
+  let yy = global.game_height * 0.1 - 16
   let dis = 29
-  let i = 5
-  if (!global.speedrun_mode_) {
-    i = 6
-  }
-  draw_sprite_ext(smenu_bar, 6, (xx - 3), (yy + i * dis - 9), 2, 2, 0, 0x4A5158, 0.8)
-  scribble("F5 go to teleporter", 6).transform(2, 2, 0).blend(4870488, 1).align(0, 0).draw((xx - 3 + 20), (yy + i * dis - 24))
+  let i = if global.speedrun_mode_ { 1 } else { 0 }
+
+  scribble("F5: go to teleporter", 6).transform(2, 2, 0).blend(4870488, 1).align(0, 0).draw((xx), (yy + i * dis))
+  i += 1
+  scribble("F6: MP regen " + (if global.archipelago.mpRegen { "On" } else { "Off" }), 6).transform(2, 2, 0).blend(4870488, 1).align(0, 0).draw((xx), (yy + i * dis))
   i += 1
   let endingLetter = "?"
   match global.archipelago.ending {
@@ -19,7 +18,7 @@ if (global.gamestate == 2 and game != noone) {
     case 3 {endingLetter = "D"}
     case 4 {endingLetter = "E"}
   }
-  scribble("Goal is ending " + endingLetter, 6).transform(2, 2, 0).blend(4870488, 1).align(0, 0).draw((xx - 3 + 20), (yy + i * dis - 24))
+  scribble("Goal is ending " + endingLetter, 6).transform(2, 2, 0).blend(4870488, 1).align(0, 0).draw((xx), (yy + i * dis))
 }
 
 if (!ds_queue_empty(global.archipelago.messageQueue) and global.archipelago.messageDuration == 0) {  
