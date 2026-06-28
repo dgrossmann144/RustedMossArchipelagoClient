@@ -1,4 +1,4 @@
-match self.item.type {
+match self.item.name {
   case "Flag" {
     scr_draw_pickup_alt()
     scr_draw_pickup()

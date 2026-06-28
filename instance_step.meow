@@ -3,7 +3,7 @@ if (self.mod == "archipelago") {
     global.archipelago.checkLocation(self.location, self.item)
     instance_destroy(self)
   }
-  match self.item.type {
+  match self.item.name {
     case "Titania_Piece" {
       self.image_index = global.archipelago.save.starsCache
     }

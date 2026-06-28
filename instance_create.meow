@@ -1,5 +1,4 @@
-match self.item.type {
-  case "archipelagoItem" { self.sprite_index = global.archipelago.archipelagoSprite }
+match self.item.name {
   case "Grappling_Hook" { self.sprite_index = strinket_pickup }
   case "Charge_Jump" { self.sprite_index = strinket_pickup }
   case "Grenade" { self.sprite_index = splayer_grenade_upgrade }
@@ -33,5 +32,12 @@ match self.item.type {
     self.index = 0
     self.sprite_index = splayer_gun_pickup
   }
-  else { self.sprite_index = strinket_pickup }
+  else {
+    if self.player == global.archipelago.playerNumber {
+      self.sprite_index = strinket_pickup 
+    }
+    else {
+      self.sprite_index = global.archipelago.archipelagoSprite
+    }
+  }
 }
