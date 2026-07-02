@@ -29,7 +29,7 @@ if (menu != noone) {
     global.archipelago.hardMaya = 0
     global.archipelago.deathLink = 0
     global.archipelago.ending = 0
-    global.archipelago.shopDiscountPercentage = 1
+    global.archipelago.shopDiscountPercentage = 0
     ds_queue_clear(global.archipelago.messageQueue)
     global.archipelago.messageDuration = 0
     global.archipelago.message = ""
@@ -37,12 +37,13 @@ if (menu != noone) {
     global.archipelago.processDeathlink = false
     global.archipelago.lastDeathLink = 0
     global.archipelago.deathLinkSource = ""
+    global.archipelago.newFile = false
   -- menu state right before loading game
   } else if (menu.state == 8) {
     match global.archipelago.menuState {
       case 0 {
         menu.start_timer = 0
-        if (file_exists("f_save_" + string(global.current_file) + ".archipelago.save")) {
+        if (file_exists("f_save_" + string(global.current_file) + ".archipelago.save") and !global.archipelago.newFile) {
           let archipelagoSaveFile = file_text_open_read("f_save_" + string(global.current_file) + ".archipelago.save")
           let archipelagoSaveString = file_text_readln(archipelagoSaveFile)
           file_text_close(archipelagoSaveFile)
@@ -92,14 +93,19 @@ if (menu != noone) {
         menu.start_timer = 0
       }
     }
-  -- the delete file state
+  -- selecting a file state
   } else if (menu.state == 21) {
+    global.archipelago.newFile = false
+    -- menu substate 2 is for deleting a file
     -- technically this deletes the archipelago save file the frame before the actual save file but it should be fine
     if (menu.substate == 2 and menu.delete_progress == 120) {
       if (file_exists("f_save_" + string(global.current_file) + ".archipelago.save")) {
         file_delete("f_save_" + string(global.current_file) + ".archipelago.save")
       }
     }
+  -- the select character menu state
+  } else if (menu.state == 3) {
+    global.archipelago.newFile = true
   }
 }
 
@@ -132,31 +138,31 @@ if (game != noone) {
       }
       global.archipelago.menuDeath = false
     }
-  -- ending a gamestate
+  -- ending A gamestate
   } else if (global.gamestate == 32 and !global.archipelago.endingProcessed) {
     if (global.archipelago.ending == 0 or global.archipelago.ending == 4) {
       global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
     }
     global.archipelago.endingProcessed = true
-  -- ending b gamestate
+  -- ending B gamestate
   } else if (global.gamestate == 33 and !global.archipelago.endingProcessed) {
     if (global.archipelago.ending <= 1 or global.archipelago.ending == 4) {
       global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
     }
     global.archipelago.endingProcessed = true
-  -- ending c gamestate
+  -- ending C gamestate
   } else if (global.gamestate == 34 and !global.archipelago.endingProcessed) {
     if (global.archipelago.ending <= 2 or global.archipelago.ending == 4) {
       global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
     }
     global.archipelago.endingProcessed = true
-  -- ending d gamestate  
+  -- ending D gamestate  
   } else if (global.gamestate == 35 and !global.archipelago.endingProcessed) {
     if (global.archipelago.ending == 0 or global.archipelago.ending >= 3) {
       global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
     }
     global.archipelago.endingProcessed = true
-  -- ending e gamestate
+  -- ending E gamestate
   } else if (global.gamestate == 36 and !global.archipelago.endingProcessed) {
     if (global.archipelago.ending == 4) {
       global.archipelago.apclient_status_update(global.AP_CLIENT_STATUS_GOAL)
@@ -213,9 +219,9 @@ if (game != noone) {
   }
 
   -- reset maya_win story flag in rooms before maya 1 fight, or set it in the rooms before maya 2 fight if player has beat maya
-  if (room == "rm_moss_top_save" or room == rm_moss_top_hidden_1) {
+  if (room == rm_moss_top_save or room == rm_moss_top_hidden_1) {
     story_flag_set("maya_win", false)
-  } else if (room == "rm_forest_core_6" or room == rm_forest_boss_after) {
+  } else if (room == rm_forest_core_6 or room == rm_forest_boss_after) {
     if (global.archipelago.save.beatMaya) {
       story_flag_set("maya_win", true)
     }
@@ -285,12 +291,6 @@ if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Grappling
 
 let bossMaya = instance_find(oboss_maya, 0)
 if (bossMaya != noone) {
-  -- todo fix makes her immortal
-  -- it player has already beaten maya make it trivial
-  -- if (global.archipelago.save.beatMaya) {
-  --   bossMaya.hp = 1
-  -- }
-
   -- reset maya win flag so player can refight to teleport back to snowy outpost
   if (bossMaya.substate == 5 and bossMaya.attack_index == 1) {
     global.archipelago.save.beatMaya = true
@@ -596,10 +596,10 @@ match pollStatus {
   case "ap_items_received" {
     global.rmml.log("items received")
     global.rmml.log(jsonString)
-    -- todo improve received message
     let numItems = global.archipelago.apclient_json_number_at(0, "len")
     let index = global.archipelago.apclient_json_number_at(0, "index")
     let namesProxy = global.archipelago.apclient_json_proxy(0, "names")
+    let playersProxy = global.archipelago.apclient_json_proxy(0, "players")
 
     if index == 0 {
       global.archipelago.save.receivedItems = []
@@ -614,8 +614,9 @@ match pollStatus {
     let i = 0
     while (i < numItems) {
       let itemName = global.archipelago.apclient_json_string_at(namesProxy, string(i))
+      let playerNumber = global.archipelago.apclient_json_number_at(playersProxy, string(i))
       array_push(global.archipelago.save.receivedItems, itemName)
-      ds_queue_enqueue(global.archipelago.messageQueue, "Received item: " + itemName)
+      ds_queue_enqueue(global.archipelago.messageQueue, "Received item " + itemName + " from " + global.archipelago.apclient_get_player_alias(playerNumber))
       i += 1
     }
     global.archipelago.processItems = true
@@ -638,6 +639,8 @@ match pollStatus {
     }
   }
   case "ap_location_info" {
+    global.rmml.log("received location info")
+    global.rmml.log(jsonString)
     let numItems = global.archipelago.apclient_json_number_at(0, "len")
     let items = global.archipelago.apclient_json_proxy(0, "items")
     --let flags = global.archipelago.apclient_json_proxy(0, "flags")
@@ -658,9 +661,9 @@ match pollStatus {
         name: global.archipelago.apclient_get_item_name(id, game)
       })
       i += 1
-      if (location == string(global.archipelago.maxLocation)) {
-        ds_queue_enqueue(global.archipelago.messageQueue, "Last location scouted")
-      }
+      -- if (location == string(global.archipelago.maxLocation)) {
+      --   ds_queue_enqueue(global.archipelago.messageQueue, "Last location scouted")
+      -- }
     }
   }
 }

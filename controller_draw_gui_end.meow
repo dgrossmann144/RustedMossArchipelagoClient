@@ -28,7 +28,7 @@ if (!ds_queue_empty(global.archipelago.messageQueue) and global.archipelago.mess
 if (global.archipelago.message != "") {
   global.archipelago.messageDuration += 1
   draw_text(0, 200, global.archipelago.message)
-  if (global.archipelago.messageDuration > 300) {
+  if (global.archipelago.messageDuration > 240) {
     global.archipelago.message = ""
     global.archipelago.messageDuration = 0
   }

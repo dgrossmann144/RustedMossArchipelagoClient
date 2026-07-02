@@ -50,6 +50,7 @@ match room {
     -- first spawn
     if instance_exists(ospawn_point) and global.gamestate != 29 and !global.spayer_spawned {
       global.weapon_data[0].found = 0
+      global.warp_unlock_ = true
     }
   }
   case rm_snow_intro_1 {
@@ -133,6 +134,11 @@ match room {
   case rm_snow_7 {
     global.archipelago.createItem(432, 272, 0, "pickup_trinket_rm_snow_7")
   }
+  case rfae_boss_puck_pre {
+    if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Infinite_Grapple")) {
+      global.archipelago.checkLocation("Infinite_Grapple")
+    }
+  }
 }
 
 let gunPickup = instance_find(opickup_gun, 0)
@@ -159,45 +165,12 @@ with otile_switcher_boss {
   event_perform(ev_other, ev_user0)
 }
 
-if (!variable_struct_exists(global.archipelago.save.checkedLocations, "Infinite_Grapple")) {
-  let infiniteGrappleRoom = false
-  match room {
-    -- todo probably don't let the boss rush rooms do this
-    case rbrush_robin { infiniteGrappleRoom = true }
-    case rbrush_robin_hard { infiniteGrappleRoom = true }
-    case rbrush_robin_old { infiniteGrappleRoom = true }
-    case rfae_boss_puck_pre { infiniteGrappleRoom = true }
-    case rfae_boss_puck { infiniteGrappleRoom = true }
-    case rfae_boss_puck_pre_2 { infiniteGrappleRoom = true }
-    case rfae_boss_puck_pre_3 { infiniteGrappleRoom = true }
-    case rfae_boss_puck_final { infiniteGrappleRoom = true }
-    case rrobin_boss_0 { infiniteGrappleRoom = true }
-    case rrobin_boss_1 { infiniteGrappleRoom = true }
-    case rrobin_boss_2 { infiniteGrappleRoom = true }
-    case rrobin_boss_3 { infiniteGrappleRoom = true }
-    case rrobin_boss_4 { infiniteGrappleRoom = true }
-    case rrobin_boss_5 { infiniteGrappleRoom = true }
-    case rrobin_boss_6 { infiniteGrappleRoom = true }
-    case rrobin_boss_7 { infiniteGrappleRoom = true }
-    case rrobin_boss_8 { infiniteGrappleRoom = true }
-    case rrobin_boss_9 { infiniteGrappleRoom = true }
-    case rrobin_alt_1 { infiniteGrappleRoom = true }
-    case rrobin_alt_2 { infiniteGrappleRoom = true }
-    case rrobin_alt_3 { infiniteGrappleRoom = true }
-    case rrobin_alt_4 { infiniteGrappleRoom = true }
-    case rrobin_alt_5 { infiniteGrappleRoom = true }
-    case rrobin_alt_6 { infiniteGrappleRoom = true }
-    case rrobin_alt_7 { infiniteGrappleRoom = true }
-    case rrobin_alt_8 { infiniteGrappleRoom = true }
-    case rrobin_alt_9 { infiniteGrappleRoom = true }
-    case rrobin_alt_10 { infiniteGrappleRoom = true }
-    case rrobin_alt_11 { infiniteGrappleRoom = true }
-    case rrobin_alt_12 { infiniteGrappleRoom = true }
-    case rrobin_alt_13 { infiniteGrappleRoom = true }
-    case rrobin_alt_14 { infiniteGrappleRoom = true }
-  }
-  if (infiniteGrappleRoom) {
-    global.archipelago.checkLocation("Infinite_Grapple")
+let bossMaya = instance_find(oboss_maya, 0)
+if (bossMaya != noone) {
+  -- if player has already beaten maya make it trivial
+  if (global.archipelago.save.beatMaya) {
+    bossMaya.max_hp = 1
+    bossMaya.hp = 1
   }
 }
 
@@ -207,21 +180,21 @@ let lakeShop = instance_find(oshop_lake, 0)
 let faeShop = instance_find(oshop_fae, 0)
 if (lakeShop != noone) {
   lakeShop.shop_data = [
-    {index: 31, cost: 100 * global.archipelago.shopDiscountPercentage},
-    {index: 15, cost: 150 * global.archipelago.shopDiscountPercentage},
-    {index: 22, cost: 200 * global.archipelago.shopDiscountPercentage}
+    {index: 31, cost: 100 * (1 - global.archipelago.shopDiscountPercentage)},
+    {index: 15, cost: 150 * (1 - global.archipelago.shopDiscountPercentage)},
+    {index: 22, cost: 200 * (1 - global.archipelago.shopDiscountPercentage)}
   ]
 } else if (faeShop != noone) {
   faeShop.shop_data = [
-    {index: 5, cost: 100 * global.archipelago.shopDiscountPercentage},
-    {index: 10, cost: 500 * global.archipelago.shopDiscountPercentage},
-    {index: 24, cost: 200 * global.archipelago.shopDiscountPercentage}
+    {index: 5, cost: 100 * (1 - global.archipelago.shopDiscountPercentage)},
+    {index: 10, cost: 500 * (1 - global.archipelago.shopDiscountPercentage)},
+    {index: 24, cost: 200 * (1 - global.archipelago.shopDiscountPercentage)}
   ]
 } else if (shop != noone) {
   shop.shop_data = [
-    {index: 2, cost: 100 * global.archipelago.shopDiscountPercentage},
-    {index: 3, cost: 90 * global.archipelago.shopDiscountPercentage},
-    {index: 9, cost: 130 * global.archipelago.shopDiscountPercentage}
+    {index: 2, cost: 100 * (1 - global.archipelago.shopDiscountPercentage)},
+    {index: 3, cost: 90 * (1 - global.archipelago.shopDiscountPercentage)},
+    {index: 9, cost: 130 * (1 - global.archipelago.shopDiscountPercentage)}
   ]
 }
 
@@ -229,12 +202,9 @@ if (lakeShop != noone) {
 let blacksmith = instance_find(oshop_blacksmith, 0)
 if (blacksmith != noone) {
   blacksmith.costs = [
-    250 * global.archipelago.shopDiscountPercentage,
-    400 * global.archipelago.shopDiscountPercentage,
-    700 * global.archipelago.shopDiscountPercentage,
+    250 * (1 - global.archipelago.shopDiscountPercentage),
+    400 * (1 - global.archipelago.shopDiscountPercentage),
+    700 * (1 - global.archipelago.shopDiscountPercentage),
     9999
   ]
 }
-
--- probably fine to put this here even though it only needs to happen once per save :P
-global.warp_unlock_ = true
