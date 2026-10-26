@@ -29,7 +29,7 @@ if (menu != noone) {
     global.archipelago.hardMaya = 0
     global.archipelago.deathLink = 0
     global.archipelago.ending = 0
-    global.archipelago.shopDiscountPercentage = 0
+    global.archipelago.shopCosts = 1
     ds_queue_clear(global.archipelago.messageQueue)
     global.archipelago.messageDuration = 0
     global.archipelago.message = ""
@@ -590,7 +590,7 @@ match pollStatus {
       global.archipelago.apclient_connect_update("[\"DeathLink\"]")
     }
     global.archipelago.ending = global.archipelago.apclient_json_number_at(0, "ending")
-    global.archipelago.shopDiscountPercentage = global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100
+    global.archipelago.shopCosts = 1 - (global.archipelago.apclient_json_number_at(0, "shop_discount_percentage") / 100)
     global.archipelago.minMp = global.archipelago.apclient_json_number_at(0, "min_mp")
   }
   case "ap_items_received" {
