@@ -1,4 +1,4 @@
-if self.player == global.archipelago.playerNumber {
+if self.item.player == global.archipelago.playerNumber {
   match self.item.name {
     case "Grappling_Hook" { self.sprite_index = strinket_pickup }
     case "Charge_Jump" { self.sprite_index = strinket_pickup }
